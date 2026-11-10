@@ -1,0 +1,33 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024" width="1024" height="1024">
+  <!-- Application icon: a depth-2 router tree, the addressed path to cell 2, a red and a blue
+       walker on it. Colours of the dark theme (viewer/src/theme/theme.css). The PNG next to it
+       is rendered from this file; `qramsim shortcut` turns the PNG into the macOS icon. -->
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#262c3a"/>
+      <stop offset="1" stop-color="#0e1015"/>
+    </linearGradient>
+  </defs>
+  <rect x="100" y="100" width="824" height="824" rx="184" fill="url(#bg)"/>
+  <g fill="none" stroke-linecap="round" stroke-width="22">
+    <path stroke="#5d6370" d="M512 262 L692 452 M332 452 L242 642 M692 452 L602 642 M692 452 L782 642 M242 642 L242 744 M602 642 L602 744 M782 642 L782 744"/>
+    <path stroke="#e8e6df" stroke-linejoin="round" d="M512 262 L332 452 L422 642 L422 744"/>
+  </g>
+  <g fill="#5d6370">
+    <circle cx="692" cy="452" r="30"/>
+    <circle cx="242" cy="642" r="28"/>
+    <circle cx="602" cy="642" r="28"/>
+    <circle cx="782" cy="642" r="28"/>
+    <rect x="196" y="744" width="92" height="92" rx="18"/>
+    <rect x="556" y="744" width="92" height="92" rx="18"/>
+    <rect x="736" y="744" width="92" height="92" rx="18"/>
+  </g>
+  <g fill="#e8e6df">
+    <circle cx="512" cy="262" r="34"/>
+    <circle cx="332" cy="452" r="30"/>
+    <circle cx="422" cy="642" r="28"/>
+  </g>
+  <rect x="376" y="744" width="92" height="92" rx="18" fill="#b58cff"/>
+  <circle cx="422" cy="357" r="46" fill="#ff5c5f" stroke="#0e1015" stroke-width="10"/>
+  <circle cx="377" cy="547" r="46" fill="#4eaaff" stroke="#0e1015" stroke-width="10"/>
+</svg>

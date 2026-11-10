@@ -1,0 +1,96 @@
+name: CI
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  engine:
+    name: engine (Python ${{ matrix.python }})
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        python: ["3.12", "3.13"]
+    defaults:
+      run:
+        working-directory: engine
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v6
+        with:
+          python-version: ${{ matrix.python }}
+          enable-cache: true
+      - run: uv sync --locked
+      - run: uv run ruff check src tests
+      - run: uv run ruff format --check src tests
+      - run: uv run mypy
+      - run: uv run pytest -q
+      - name: CLI smoke test
+        run: |
+          uv run qramsim run --preset E1 --print-kets --no-color
+          uv run qramsim run --variant basic --n 6 --m 4 --input uniform --out traj.json
+
+  viewer:
+    name: viewer
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: viewer
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          package_json_file: viewer/package.json
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+          cache-dependency-path: viewer/pnpm-lock.yaml
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm typecheck
+      - run: pnpm test
+      - run: pnpm build
+
+  e2e:
+    name: end-to-end (engine + viewer)
+    runs-on: ubuntu-latest
+    needs: [engine, viewer]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v6
+        with:
+          python-version: "3.13"
+          enable-cache: true
+      - run: uv sync --locked
+        working-directory: engine
+      - uses: pnpm/action-setup@v4
+        with:
+          package_json_file: viewer/package.json
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+          cache-dependency-path: viewer/pnpm-lock.yaml
+      - run: pnpm install --frozen-lockfile
+        working-directory: viewer
+      - run: pnpm exec playwright install --with-deps chromium
+        working-directory: viewer
+      - run: pnpm e2e
+        working-directory: viewer
+      - name: Video and figure exports
+        working-directory: engine
+        run: |
+          sudo apt-get install -y ffmpeg
+          uv run qramsim video --preset E1 --duration 2 --fps 5 --size 640x360 --out "$RUNNER_TEMP/e1.mp4"
+          uv run qramsim figure --preset dualrail --tick 13 --out "$RUNNER_TEMP/dr.svg"
+      - name: Static site (engine in the browser)
+        working-directory: viewer
+        run: |
+          pnpm build:static
+          pnpm e2e:static
+      - uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: playwright-report
+          path: viewer/test-results

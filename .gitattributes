@@ -1,0 +1,4 @@
+# Line endings of the launchers: the shell needs LF, cmd.exe wants CRLF.
+*.command text eol=lf
+*.sh text eol=lf
+*.bat text eol=crlf

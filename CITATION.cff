@@ -1,0 +1,41 @@
+cff-version: 1.2.0
+message: "If you use this program, please cite the paper (preferred citation), and the software if it produced your results."
+type: software
+title: "qram-walkers: simulator and visualiser of the quantum-walker quantum RAM"
+version: 0.1.0
+license: MIT
+repository-code: "https://github.com/prppgn/qram-walkers"
+keywords:
+  - quantum RAM
+  - quantum walks
+  - quantum computing
+  - simulator
+authors:
+  - given-names: Giuseppe
+    family-names: De Riso
+  - given-names: Giuseppe
+    family-names: Catalano
+  - given-names: Seth
+    family-names: Lloyd
+  - given-names: Vittorio
+    family-names: Giovannetti
+  - given-names: Dario
+    family-names: De Santis
+preferred-citation:
+  type: article
+  title: "A resource-efficient quantum-walker Quantum RAM"
+  authors:
+    - given-names: Giuseppe
+      family-names: De Riso
+    - given-names: Giuseppe
+      family-names: Catalano
+    - given-names: Seth
+      family-names: Lloyd
+    - given-names: Vittorio
+      family-names: Giovannetti
+    - given-names: Dario
+      family-names: De Santis
+  year: 2025
+  journal: "arXiv preprint"
+  doi: "10.48550/arXiv.2508.02855"
+  url: "https://arxiv.org/abs/2508.02855"

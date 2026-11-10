@@ -1,0 +1,162 @@
+name: Installers
+
+# Builds the installers on each system: at a tag v<version> they go to a draft release, to be
+# checked and published by hand; started by hand (Actions, Run workflow) they are only kept as
+# downloadable artifacts of the run.
+on:
+  push:
+    tags: ["v*"]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    name: ${{ matrix.name }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - { name: macOS (Apple silicon), os: macos-15 }
+          - { name: macOS (Intel), os: macos-15-intel }
+          - { name: Windows, os: windows-latest }
+          - { name: Linux, os: ubuntu-22.04 } # an older glibc: the AppImage runs on more systems
+    env:
+      # Signing is optional: without these secrets the app is signed ad hoc (see INSTALL.md).
+      HAS_MACOS_SIGNING: ${{ secrets.MACOS_CERTIFICATE != '' && secrets.APPLE_ID != '' }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: astral-sh/setup-uv@v6
+        with:
+          python-version: "3.13"
+          enable-cache: true
+      - uses: pnpm/action-setup@v4
+        with:
+          package_json_file: viewer/package.json
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+          cache-dependency-path: viewer/pnpm-lock.yaml
+
+      - name: Tag and version agree
+        if: startsWith(github.ref, 'refs/tags/v')
+        shell: bash
+        working-directory: engine
+        run: |
+          version=$(grep -m1 '^version' pyproject.toml | cut -d '"' -f2)
+          test "v$version" = "$GITHUB_REF_NAME" || { echo "tag $GITHUB_REF_NAME, version $version"; exit 1; }
+
+      - name: Build the interface
+        working-directory: viewer
+        run: |
+          pnpm install --frozen-lockfile
+          pnpm build
+      - name: Install the engine with the packaging tools
+        working-directory: engine
+        run: uv sync --locked --extra desktop --group bundle
+
+      - name: Inno Setup (Windows)
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          $iscc = Get-Command iscc -ErrorAction SilentlyContinue
+          if ($iscc) { $path = $iscc.Source } else {
+            choco install innosetup -y --no-progress
+            $path = "${env:ProgramFiles(x86)}\Inno Setup 6\ISCC.exe"
+          }
+          "ISCC=$path" >> $env:GITHUB_ENV
+      - name: appimagetool (Linux)
+        if: runner.os == 'Linux'
+        run: |
+          curl -fsSL -o "$RUNNER_TEMP/appimagetool" \
+            https://github.com/AppImage/appimagetool/releases/download/continuous/appimagetool-x86_64.AppImage
+          chmod +x "$RUNNER_TEMP/appimagetool"
+          echo "APPIMAGETOOL=$RUNNER_TEMP/appimagetool" >> "$GITHUB_ENV"
+          echo "APPIMAGE_EXTRACT_AND_RUN=1" >> "$GITHUB_ENV"
+
+      - name: Developer ID certificate (macOS, only with the signing secrets)
+        if: runner.os == 'macOS' && env.HAS_MACOS_SIGNING == 'true'
+        env:
+          MACOS_CERTIFICATE: ${{ secrets.MACOS_CERTIFICATE }}
+          MACOS_CERTIFICATE_PASSWORD: ${{ secrets.MACOS_CERTIFICATE_PASSWORD }}
+          MACOS_SIGN_IDENTITY: ${{ secrets.MACOS_SIGN_IDENTITY }}
+        run: |
+          keychain="$RUNNER_TEMP/signing.keychain-db"
+          echo "$MACOS_CERTIFICATE" | base64 --decode > "$RUNNER_TEMP/certificate.p12"
+          security create-keychain -p "" "$keychain"
+          security set-keychain-settings -lut 21600 "$keychain"
+          security unlock-keychain -p "" "$keychain"
+          security import "$RUNNER_TEMP/certificate.p12" -P "$MACOS_CERTIFICATE_PASSWORD" -A -t cert -f pkcs12 -k "$keychain"
+          security set-key-partition-list -S apple-tool:,apple: -k "" "$keychain"
+          security list-keychains -d user -s "$keychain"
+          echo "MACOS_SIGN_IDENTITY=$MACOS_SIGN_IDENTITY" >> "$GITHUB_ENV"
+
+      - name: Build the installer (the app checks itself before it is packed)
+        working-directory: engine
+        run: uv run --no-sync python ../packaging/build.py
+
+      - name: The window shows the interface (macOS, Windows)
+        if: runner.os != 'Linux'
+        continue-on-error: true
+        shell: bash
+        run: |
+          if [ "$RUNNER_OS" = macOS ]; then
+            packaging/build/dist/qram-walkers.app/Contents/MacOS/qram-walkers --self-test window
+          else
+            pwsh -NoProfile -Command "\$p = Start-Process -FilePath 'packaging/build/dist/qram-walkers/qram-walkers.exe' -ArgumentList '--self-test','window' -Wait -PassThru; Get-Content \"\$env:LOCALAPPDATA/qram-walkers/logs/qram-walkers.log\" -ErrorAction SilentlyContinue; exit \$p.ExitCode"
+          fi
+      - name: The AppImage runs (Linux)
+        if: runner.os == 'Linux'
+        run: packaging/out/*.AppImage --self-test
+
+      - name: Notarize (macOS, only with the signing secrets)
+        if: runner.os == 'macOS' && env.HAS_MACOS_SIGNING == 'true'
+        env:
+          APPLE_ID: ${{ secrets.APPLE_ID }}
+          APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
+          APPLE_APP_PASSWORD: ${{ secrets.APPLE_APP_PASSWORD }}
+        run: |
+          dmg=$(ls packaging/out/*.dmg)
+          xcrun notarytool submit "$dmg" --apple-id "$APPLE_ID" --team-id "$APPLE_TEAM_ID" \
+            --password "$APPLE_APP_PASSWORD" --wait
+          xcrun stapler staple "$dmg"
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: installer-${{ matrix.os }}
+          path: packaging/out/*
+          if-no-files-found: error
+
+  release:
+    name: draft release
+    if: startsWith(github.ref, 'refs/tags/v')
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: installer-*
+          merge-multiple: true
+          path: installers
+      - name: Draft release with the installers
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          cat > notes.md <<NOTES
+          Download the file for your system and follow the installation guide:
+          https://github.com/${GITHUB_REPOSITORY}/blob/${GITHUB_REF_NAME}/INSTALL.md
+
+          * macOS (Apple silicon or Intel, macOS 14 or later): the \`.dmg\`
+          * Windows 10 or 11: the \`-setup.exe\`
+          * Linux (x86_64): the \`.AppImage\`
+
+          Or use it in the browser, with nothing to install: https://${GITHUB_REPOSITORY_OWNER}.github.io/${GITHUB_REPOSITORY#*/}/
+          NOTES
+          gh release create "$GITHUB_REF_NAME" installers/* --repo "$GITHUB_REPOSITORY" \
+            --draft --title "qram-walkers ${GITHUB_REF_NAME#v}" --notes-file notes.md

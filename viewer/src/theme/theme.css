@@ -1,0 +1,276 @@
+/* Themes (DESIGN.md §7.4, D10): "paper" (light, TikZ-like) and "talk" (dark, high
+   contrast, glow on flashes). Components use only these tokens and the shared classes
+   below (.panel, .btn, .chip, .field, .muted, .kbd, .badge). */
+
+:root,
+[data-theme="paper"] {
+  --bg: #f7f5ef;
+  --surface: #ffffff;
+  --surface-2: #f1eee6;
+  --ink: #1f1f24;
+  --ink-2: #55565e;
+  --line: #d9d5ca;
+  --edge: #6b6b72;
+  --site: #b9b6ad;
+  --red: #d62728;
+  --blue: #1f77b4;
+  --red-soft: rgba(214, 39, 40, 0.14);
+  --blue-soft: rgba(31, 119, 180, 0.14);
+  --ghost: #9b9ba2;
+  --accent: #6a4c93;
+  --accent-soft: rgba(106, 76, 147, 0.14);
+  --gate: rgba(46, 160, 67, 0.16);
+  --gate-line: #2e9f43;
+  --gate-in: rgba(230, 140, 20, 0.22);
+  --noise: #c2185b;
+  --noise-soft: rgba(194, 24, 91, 0.12);
+  --flash-act: rgba(255, 179, 0, 0.55);
+  --flash-idle: rgba(140, 140, 150, 0.35);
+  --cell: #ece7da;
+  --cell-lit: #ffc94a;
+  --phase-routing: #dbe9f6;
+  --phase-query: #f4e6c8;
+  --phase-inverse: #e5dcf0;
+  --phase-init: #e9e9e9;
+  --shadow: 0 1px 3px rgba(0, 0, 0, 0.08), 0 4px 16px rgba(0, 0, 0, 0.06);
+  --glow: none;
+  --font: "Inter", "Segoe UI", system-ui, -apple-system, sans-serif;
+  --mono: "JetBrains Mono", "SF Mono", Menlo, Consolas, monospace;
+  --serif: "STIX Two Text", "Latin Modern Roman", "Cambria", Georgia, serif;
+  color-scheme: light;
+}
+
+[data-theme="talk"] {
+  --bg: #0e1015;
+  --surface: #171a21;
+  --surface-2: #1f232c;
+  --ink: #eceef2;
+  --ink-2: #a3a8b4;
+  --line: #2c313c;
+  --edge: #8a909c;
+  --site: #3d4350;
+  --red: #ff5c5f;
+  --blue: #4eaaff;
+  --red-soft: rgba(255, 92, 95, 0.18);
+  --blue-soft: rgba(78, 170, 255, 0.18);
+  --ghost: #6f7581;
+  --accent: #b58cff;
+  --accent-soft: rgba(181, 140, 255, 0.18);
+  --gate: rgba(80, 220, 120, 0.12);
+  --gate-line: #50dc78;
+  --gate-in: rgba(255, 170, 60, 0.2);
+  --noise: #ff5fa2;
+  --noise-soft: rgba(255, 95, 162, 0.16);
+  --flash-act: rgba(255, 200, 40, 0.75);
+  --flash-idle: rgba(160, 160, 175, 0.35);
+  --cell: #262b35;
+  --cell-lit: #a87b12;
+  --phase-routing: #1d3047;
+  --phase-query: #45391d;
+  --phase-inverse: #35284a;
+  --phase-init: #2a2d34;
+  --shadow: 0 1px 3px rgba(0, 0, 0, 0.4), 0 6px 20px rgba(0, 0, 0, 0.35);
+  --glow: drop-shadow(0 0 4px var(--flash-act));
+  color-scheme: dark;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body,
+#root {
+  height: 100%;
+  margin: 0;
+}
+
+body {
+  background: var(--bg);
+  color: var(--ink);
+  font-family: var(--font);
+  font-size: 13px;
+  line-height: 1.45;
+}
+
+button,
+input,
+select,
+textarea {
+  font: inherit;
+  color: inherit;
+}
+
+.muted {
+  color: var(--ink-2);
+}
+
+.mono {
+  font-family: var(--mono);
+}
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  border: 1px solid var(--line);
+  background: var(--surface);
+  border-radius: 6px;
+  padding: 3px 9px;
+  cursor: pointer;
+  white-space: nowrap;
+}
+.btn:hover {
+  border-color: var(--accent);
+}
+.btn:disabled {
+  opacity: 0.45;
+  cursor: default;
+}
+.btn.primary {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #fff;
+}
+.btn.active {
+  background: var(--accent-soft);
+  border-color: var(--accent);
+}
+.btn.icon {
+  padding: 3px 7px;
+  min-width: 28px;
+  justify-content: center;
+}
+
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  padding: 1px 8px;
+  font-size: 12px;
+  background: var(--surface-2);
+}
+
+.badge {
+  display: inline-block;
+  font-size: 10.5px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  padding: 0 6px;
+  border-radius: 4px;
+  background: var(--surface-2);
+  color: var(--ink-2);
+  border: 1px solid var(--line);
+}
+
+.field {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.field input[type="number"],
+.field select,
+.field input[type="text"],
+textarea {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 5px;
+  padding: 2px 6px;
+}
+.field input[type="number"] {
+  width: 64px;
+}
+
+.kbd {
+  font-family: var(--mono);
+  font-size: 11px;
+  border: 1px solid var(--line);
+  border-bottom-width: 2px;
+  border-radius: 4px;
+  padding: 0 4px;
+  background: var(--surface-2);
+}
+
+/* Panels: title bar with an ⓘ help button, collapsible body. */
+.panel {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  box-shadow: var(--shadow);
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
+.panel-head {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 10px;
+  border-bottom: 1px solid var(--line);
+  font-weight: 600;
+}
+.panel-head .spacer {
+  flex: 1;
+}
+.panel-body {
+  padding: 8px 10px;
+  overflow: auto;
+  min-height: 0;
+}
+.info-btn {
+  border: none;
+  background: transparent;
+  color: var(--accent);
+  cursor: pointer;
+  font-size: 14px;
+  line-height: 1;
+  padding: 0 2px;
+}
+
+/* Kets in the paper's notation */
+.ket {
+  font-family: var(--serif);
+  font-size: 15px;
+  white-space: nowrap;
+}
+.ket .g-R {
+  color: var(--red);
+  font-weight: 600;
+}
+.ket .g-B {
+  color: var(--blue);
+  font-weight: 600;
+}
+.ket .g-E {
+  font-weight: 700;
+}
+.ket sup,
+.ket sub {
+  font-size: 10px;
+  font-family: var(--font);
+}
+
+table.grid {
+  border-collapse: collapse;
+  width: 100%;
+}
+table.grid th,
+table.grid td {
+  border-bottom: 1px solid var(--line);
+  padding: 3px 6px;
+  text-align: left;
+  vertical-align: top;
+}
+table.grid th {
+  font-weight: 600;
+  color: var(--ink-2);
+  font-size: 12px;
+}
+
+.ket .ket-stray,
+.ket .ket-collided {
+  color: var(--noise);
+}
+

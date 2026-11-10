@@ -1,0 +1,41 @@
+# reference material (Overleaf clone)
+paper/
+
+# python
+__pycache__/
+*.pyc
+.venv/
+.mypy_cache/
+.ruff_cache/
+.pytest_cache/
+.hypothesis/
+dist/
+build/
+*.egg-info/
+
+# node
+node_modules/
+viewer/dist/
+viewer/dist-static/
+.vite/
+playwright-report/
+test-results/
+
+# os / editors
+.DS_Store
+.idea/
+.vscode/
+
+# large outputs
+*.mp4
+*.gif
+trajectories/
+
+# the authors' working notes and agent instructions (kept locally, not published)
+internal/
+CLAUDE.md
+.claude/
+
+# installers (packaging/build.py)
+packaging/build/
+packaging/out/
