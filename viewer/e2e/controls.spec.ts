@@ -206,6 +206,13 @@ test.describe("Simple mode", () => {
       await take(`details ${tab}`, "[data-testid='details-drawer']");
     }
     await page.keyboard.press("Escape");
+    // Learn: a chapter with its formulas open, then the glossary
+    await page.getByTestId("open-learn").click();
+    await page.getByTestId("learn-formulas").locator("summary").click();
+    await take("learn", "[data-testid='learn']");
+    await page.getByTestId("learn-nav-glossary").click();
+    await take("learn, glossary", "[data-testid='learn']");
+    await page.getByTestId("learn-close").click();
     // the tutorial's card, at its first and last step
     await page.getByTestId("open-tutorial").click();
     await take("tutorial", "[data-testid='tour']");

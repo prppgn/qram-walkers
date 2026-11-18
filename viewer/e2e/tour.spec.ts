@@ -7,7 +7,7 @@ import { smallText } from "./text";
 // a first visit; no sliding card, so its place can be measured at once
 test.use({ storageState: { cookies: [], origins: [] }, contextOptions: { reducedMotion: "reduce" } });
 
-const LIT: Record<string, number> = { tree: 1, train: 2, switch: 1, gate: 2, cells: 2, words: 2, controls: 1, more: 5 };
+const LIT: Record<string, number> = { tree: 1, train: 2, switch: 1, gate: 2, cells: 2, words: 2, controls: 1, more: 6 };
 
 async function ready(page: Page) {
   await expect(page.getByTestId("frame-counter")).toContainText("input");

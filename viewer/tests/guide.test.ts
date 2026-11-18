@@ -11,11 +11,11 @@ const pages = Object.fromEntries(
 
 // Anchors the viewer links to from ⓘ buttons and the narration's "Explain".
 const REQUIRED: Record<string, string[]> = {
-  start: ["start-tour", "start-tutorial", "start-help", "start-tasks"],
+  start: ["start-tour", "start-tutorial", "start-learn", "start-help", "start-tasks"],
   controls: [
     "controls", "controls-modes", "controls-topbar", "controls-tree", "controls-export", "controls-playback", "controls-state", "controls-panels",
     "controls-setup", "controls-input", "controls-memory", "controls-noise", "controls-options", "controls-presets",
-    "controls-compare", "controls-tutorial", "controls-guide",
+    "controls-compare", "controls-tutorial", "controls-learn", "controls-guide",
   ],
   cli: ["cli", "cli-app", "cli-shortcut", "cli-run", "cli-figure", "cli-sweep", "cli-scaling", "cli-python"],
   protocol: ["overview", "train", "encoding", "tree", "clock", "phases", "routing", "query", "inverse", "ghosts", "kets"],
@@ -38,7 +38,7 @@ const REQUIRED: Record<string, string[]> = {
     "noise-strays", "noise-collisions", "noise-absorb", "noise-ensembles",
     "noise-overrotation", "noise-imbalance", "noise-pruning",
   ],
-  ui: ["ui-modes", "ui-canvas", "ui-export", "ui-figure", "ui-compare", "ui-static", "ui-playback", "ui-timeline", "ui-train", "ui-kets", "ui-phasors", "ui-narration", "ui-panels", "ui-events", "ui-legend", "ui-setup", "ui-memory", "ui-themes", "ui-keyboard", "ui-qudit", "ui-dualrail", "ui-lens"],
+  ui: ["ui-modes", "ui-canvas", "ui-export", "ui-figure", "ui-compare", "ui-static", "ui-playback", "ui-timeline", "ui-train", "ui-kets", "ui-phasors", "ui-narration", "ui-panels", "ui-events", "ui-legend", "ui-setup", "ui-memory", "ui-themes", "ui-keyboard", "ui-qudit", "ui-dualrail", "ui-lens", "ui-learn", "ui-wording", "ui-glossary"],
 };
 
 describe("user guide", () => {

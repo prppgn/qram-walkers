@@ -12,7 +12,9 @@ export async function smallText(page: Page): Promise<{ px: number; where: string
       if (!/[^\s​]/.test(n.textContent ?? "")) continue;
       const el = n.parentElement;
       if (!el || !el.checkVisibility({ visibilityProperty: true }) || !el.getClientRects().length) continue;
-      if (el.closest(".katex .msupsub, .katex .mfrac, title, option")) continue;
+      // KaTeX scripts and fractions are exempt; .katex-mathml is the copy for screen readers,
+      // clipped to one pixel and never seen
+      if (el.closest(".katex .msupsub, .katex .mfrac, .katex-mathml, title, option")) continue;
       let px = parseFloat(getComputedStyle(el).fontSize);
       if (el instanceof SVGGraphicsElement) {
         const m = el.getScreenCTM();
