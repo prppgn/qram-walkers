@@ -275,9 +275,16 @@ function anyWalkerInTree(f: FrameJSON): boolean {
 }
 
 /** What happens in a frame without recorded events (read from positions, not computed). */
-export function quietFrameText(traj: Trajectory, frame: number): string {
+export function quietFrameText(traj: Trajectory, frame: number, register: "plain" | "technical" = "technical"): string {
   const f = traj.frames[frame];
   if (!f) return "";
+  if (register === "plain") {
+    if (f.t < 0) return "The train waits at the input port. Press play or step forward to start.";
+    if (f.phase === "query") return "The walkers rest in the memory cells; nothing happens in this tick.";
+    if (f.phase === "inverse" && !anyWalkerInTree(f)) return "Every walker has left the tree.";
+    if (f.phase === "routing" || f.phase === "inverse") return "The walkers move one step; no gate acts in this tick.";
+    return "The walkers move one step.";
+  }
   if (f.t < 0) {
     return "Input state: the train waits on the port line, front slot first. Step or play to start the routing.";
   }

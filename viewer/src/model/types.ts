@@ -101,7 +101,9 @@ export interface Crossing {
   to?: [number, number];
 }
 
-export type EventJSON =
+/** Every event carries a technical sentence (`text`) and, from engines that write it, a plain
+ *  one (`text_plain`) for readers who have not read the paper. */
+export type EventJSON = { text_plain?: string } & (
   | { kind: "phase"; phase: string; text: string }
   | { kind: "turn"; text: string }
   | {
@@ -131,7 +133,7 @@ export type EventJSON =
       flips?: { l: number; address: string; j: number }[];
     }
   | { kind: "stray"; gate: string; b: number; bin: number; pos: Pos; text: string }
-  | { kind: "collision"; b: number; pos: Pos; text: string };
+  | { kind: "collision"; b: number; pos: Pos; text: string });
 
 export interface FrameJSON {
   t: number;

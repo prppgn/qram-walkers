@@ -6,7 +6,7 @@ import { useEffect, useMemo, useRef } from "react";
 import { branchLabel } from "../../layout/kets";
 import type { EventJSON, Trajectory } from "../../model/types";
 import { logSections } from "../../playback/moments";
-import { usePlayback } from "../../playback/store";
+import { usePlayback, useRegister, type Register } from "../../playback/store";
 import { InfoButton, Panel } from "../Panel";
 import {
   anchorForEvent,
@@ -19,7 +19,7 @@ import {
   quietFrameText,
   tickLabel,
 } from "./helpAnchors";
-import { Scripted } from "./KetPanel";
+import { Glossed } from "../glossary/Glossed";
 import "./panels.css";
 
 type LogItem =
@@ -41,7 +41,24 @@ export function logItems(traj: Trajectory, frame: number): LogItem[] {
   return out;
 }
 
-function EventItem({ e, frame, t, current, onSeek, onExplain }: { e: EventJSON; frame: number; t: number; current: boolean; onSeek: () => void; onExplain: () => void }) {
+function EventItem({
+  e,
+  frame,
+  t,
+  current,
+  register,
+  onSeek,
+  onExplain,
+}: {
+  e: EventJSON;
+  frame: number;
+  t: number;
+  current: boolean;
+  register: Register;
+  onSeek: () => void;
+  onExplain: () => void;
+}) {
+  const text = register === "plain" && e.text_plain ? e.text_plain : e.text;
   const idle = isIdleGate(e);
   const noisy = isNoiseEvent(e);
   return (
@@ -73,7 +90,7 @@ function EventItem({ e, frame, t, current, onSeek, onExplain }: { e: EventJSON; 
           </>
         )}
       </span>
-      <Scripted text={e.text} className="pn-event-text" />
+      <Glossed text={text} className="pn-event-text" gloss={false} />
       <button
         className="btn pn-btn-sm"
         title="Open the user guide where this step is explained"
@@ -93,6 +110,7 @@ export function Narration({ fill = false }: { fill?: boolean }) {
   const frame = usePlayback((s) => s.frame);
   const openHelp = usePlayback((s) => s.openHelp);
   const seek = usePlayback((s) => s.seek);
+  const register = useRegister();
   const list = useRef<HTMLDivElement>(null);
   const items = useMemo(() => (traj ? logItems(traj, frame) : []), [traj, frame]);
 
@@ -137,7 +155,9 @@ export function Narration({ fill = false }: { fill?: boolean }) {
         </p>
       )}
       <div className="pn-log" ref={list} data-testid="narration-log" aria-live="polite">
-        <p className={`pn-log-start${frame === 0 ? " current" : ""}`}>{quietFrameText(traj, 0)}</p>
+        <p className={`pn-log-start${frame === 0 ? " current" : ""}`}>
+          <Glossed text={quietFrameText(traj, 0, register)} />
+        </p>
         <ol className="pn-events">
           {items.map((it, i) =>
             it.kind === "section" ? (
@@ -155,13 +175,14 @@ export function Narration({ fill = false }: { fill?: boolean }) {
                 frame={it.frame}
                 t={it.t}
                 current={it.frame === frame}
+                register={register}
                 onSeek={() => seek(it.frame)}
                 onExplain={() => openHelp(anchorForEvent(it.e, variant))}
               />
             ),
           )}
         </ol>
-        {frame > 0 && f.events.length === 0 && <p className="muted pn-log-now">{quietFrameText(traj, frame)}</p>}
+        {frame > 0 && f.events.length === 0 && <p className="muted pn-log-now">{quietFrameText(traj, frame, register)}</p>}
       </div>
     </Panel>
   );

@@ -12,6 +12,15 @@ export type Mode = "simple" | "advanced";
 /** Tabs of the Details drawer (Simple mode). */
 export type DetailsTab = "State" | "Metrics" | "Resources" | "Events" | "Phasors" | "Legend" | "Train";
 
+/** Wording of the narration, captions and descriptions: plain for readers who have not read
+ *  the paper, technical in the paper's terms. "auto": plain in Simple mode, technical in
+ *  Advanced. */
+export type Wording = "auto" | "plain" | "technical";
+export type Register = "plain" | "technical";
+export function registerOf(mode: Mode, wording: Wording): Register {
+  return wording === "auto" ? (mode === "simple" ? "plain" : "technical") : wording;
+}
+
 /** Default playback speed of each mode, in ticks per second. */
 export const MODE_SPEED: Record<Mode, number> = { simple: 1, advanced: 2 };
 
@@ -33,6 +42,8 @@ export interface ViewOptions {
   lens: boolean;
   /** Where the lens is, as a shift from its default place, and its size (1 = the tree's scale). */
   lensAt: { dx: number; dy: number; scale: number };
+  /** Wording of the sentences (see Wording). */
+  wording: Wording;
 }
 
 export interface PlaybackState {
@@ -149,6 +160,7 @@ export const usePlayback = create<PlaybackState>((set, get) => ({
     orientation: "horizontal",
     lens: true,
     lensAt: { dx: 0, dy: 0, scale: 1 },
+    wording: "auto",
   },
   highlight: null,
   presets: [],
@@ -315,3 +327,10 @@ export const usePlayback = create<PlaybackState>((set, get) => ({
 }));
 
 engine.onStatus?.((status) => usePlayback.setState({ engineStatus: status }));
+
+/** The wording in force: the View menu's choice, or the mode's. */
+export function useRegister(): Register {
+  const mode = usePlayback((s) => s.mode);
+  const wording = usePlayback((s) => s.view.wording);
+  return registerOf(mode, wording);
+}

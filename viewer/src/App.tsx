@@ -25,6 +25,7 @@ import { ModeSwitch } from "./components/shell/ModeSwitch";
 import { ViewMenu } from "./components/shell/ViewMenu";
 import { Tour, TutorialButton, Welcome } from "./components/tour/Tour";
 import { useTour } from "./components/tour/tourStore";
+import { GlossaryPopover } from "./components/glossary/Glossed";
 
 const QUICK_PRESETS = ["E1", "E2", "E1-switch", "E3", "E4", "demo-uniform", "qudit-short", "dualrail"];
 const TABS = ["Phasors", "Metrics", "Resources", "Events", "Legend"] as const;
@@ -200,6 +201,13 @@ function TopBar() {
           <option value="uniform">uniform</option>
         </select>
       </label>
+      <label className="field" title="Wording of the narration, the caption and the descriptions: plain words, or the paper's terms. 'follow the mode': plain in Simple, technical in Advanced">
+        <select value={v.wording} data-testid="wording" onChange={(e) => s.setView({ wording: e.target.value as "auto" | "plain" | "technical" })}>
+          <option value="auto">wording: follow the mode</option>
+          <option value="plain">wording: plain</option>
+          <option value="technical">wording: technical</option>
+        </select>
+      </label>
       <label className="field" title="Branch opacity proportional to |α|² (probability) or |α|">
         <select value={v.opacity} onChange={(e) => s.setView({ opacity: e.target.value as "prob" | "amp" })}>
           <option value="prob">opacity ∝ |α|²</option>
@@ -319,6 +327,7 @@ export function App() {
       <HelpPanel />
       <Tour />
       <Welcome />
+      <GlossaryPopover />
     </div>
   );
 }

@@ -1,0 +1,42 @@
+/* Glossary terms in running text and their popover. */
+.term {
+  text-decoration: underline dotted;
+  text-decoration-color: var(--accent);
+  text-underline-offset: 3px;
+  text-decoration-thickness: 1.5px;
+  cursor: help;
+  border-radius: 3px;
+}
+.term:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 1px;
+}
+.term-popover {
+  position: fixed;
+  z-index: 120;
+  width: min(320px, calc(100vw - 16px));
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 10px 12px;
+  background: var(--surface);
+  color: var(--ink);
+  border: 1px solid var(--line);
+  border-left: 3px solid var(--accent);
+  border-radius: 8px;
+  box-shadow: 0 6px 24px rgba(0, 0, 0, 0.2);
+  font-size: 14px;
+  line-height: 1.45;
+  text-align: left;
+  font-weight: normal;
+}
+.term-popover strong {
+  font-size: 14px;
+}
+.term-more {
+  font-size: 13px;
+}
+.term-popover {
+  cursor: pointer;
+}

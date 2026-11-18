@@ -49,6 +49,14 @@ export function ViewMenu() {
               <option value="uniform">uniform</option>
             </select>
           </label>
+          <label className="menu-row" title="Wording of the narration, the caption and the descriptions: plain words, or the paper's terms. 'follow the mode': plain in Simple, technical in Advanced">
+            wording
+            <select value={v.wording} data-testid="wording" onChange={(e) => put({ wording: e.target.value as ViewOptions["wording"] })}>
+              <option value="auto">follow the mode</option>
+              <option value="plain">plain</option>
+              <option value="technical">technical</option>
+            </select>
+          </label>
           <label className="menu-row" title="Branch opacity proportional to |α|² (probability) or |α|">
             opacity
             <select value={v.opacity} onChange={(e) => put({ opacity: e.target.value as ViewOptions["opacity"] })}>

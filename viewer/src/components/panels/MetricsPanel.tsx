@@ -7,7 +7,8 @@ import { useRef, useState } from "react";
 import { engine } from "../../engine/client";
 import { branchLabel } from "../../layout/kets";
 import type { EnsembleJSON, Trajectory } from "../../model/types";
-import { usePlayback } from "../../playback/store";
+import { usePlayback, useRegister } from "../../playback/store";
+import { Glossed } from "../glossary/Glossed";
 import { InfoButton, Panel } from "../Panel";
 import {
   ENSEMBLE_DEFAULT_RUNS,
@@ -28,6 +29,8 @@ import "./panels.css";
 interface MetricInfo {
   name: string;
   help: string;
+  /** The same in plain words (Simple mode, or "plain" in the View menu). */
+  plain: string;
   anchor?: string;
   /** Should be exactly 1 in an ideal run: shown as "1 − ε" and flagged when below. */
   nearOne?: boolean;
@@ -44,6 +47,7 @@ const METRICS: Record<string, MetricInfo> = {
   fidelity: {
     name: "Fidelity F",
     help: "|⟨ψ_ideal|ψ_out⟩|² with ψ_ideal = Σ_a α_a |a⟩_A |b^{(a)}⟩_D of Eq. (1): 1 means the qRAM worked exactly.",
+    plain: "How close the output is to what a perfect quantum RAM gives: every address with the data stored there. 1 means the run was exact.",
     anchor: "fidelity",
     nearOne: true,
     boundedByDiscard: true,
@@ -51,6 +55,7 @@ const METRICS: Record<string, MetricInfo> = {
   success: {
     name: "Success probability",
     help: "Probability that the output branch is well formed: every walker left in its slot, red, flags present, switches off.",
+    plain: "The chance that the output looks right: every walker back in its place and in the right colour, nothing missing or left switched on.",
     anchor: "success",
     nearOne: true,
     boundedByDiscard: true,
@@ -58,18 +63,21 @@ const METRICS: Record<string, MetricInfo> = {
   consistency: {
     name: "Consistency",
     help: "Given a well-formed output, probability that the retrieved data equal the stored b^{(a)} of the address.",
+    plain: "When the output looks right, the chance that the bits read are the bits stored at the address.",
     anchor: "consistency",
     nearOne: true,
   },
   entropy_AD: {
     name: "Entanglement entropy S(ρ_A)",
     help: "Entanglement entropy of the address register with data + switches; ideally the Shannon entropy of the retrieved data.",
+    plain: "How strongly the address walkers are tied (entangled) to the data they read; for a perfect run it equals the entropy of the data read.",
     anchor: "entropy",
     unit: "bits",
   },
   collided: {
     name: "Collided weight",
     help: "Weight of branches frozen by a collision (collided branches: two walkers on one site); 0 in an ideal run.",
+    plain: "The share of the state in which two walkers ran into each other and stopped; 0 when nothing went wrong.",
     anchor: "noise-collisions",
     nearZero: true,
     weight: true,
@@ -77,6 +85,7 @@ const METRICS: Record<string, MetricInfo> = {
   discarded: {
     name: "Discarded weight",
     help: "Weight of the branches dropped by pruning under coherent errors (|α|² below the pruning threshold, or beyond the branch cap). Nothing is renormalised: when it is above 0, fidelity and success are lower bounds.",
+    plain: "The share of the state the simulator left out to keep the run small (tiny branches made by coherent errors); above 0, fidelity and success are lower bounds.",
     anchor: "noise-pruning",
     nearZero: true,
     weight: true,
@@ -84,16 +93,19 @@ const METRICS: Record<string, MetricInfo> = {
   norm: {
     name: "Norm ⟨ψ|ψ⟩",
     help: "Squared norm of the output state: 1 unless weight was discarded.",
+    plain: "The total probability kept in the output: 1 unless some was left out.",
     nearOne: true,
   },
   heralded_fidelity: {
     name: "Heralded fidelity ⟨F⟩/⟨success⟩",
     help: "Fidelity given a well-formed output: the runs whose output visibly failed are discarded. On the qudit and dual-rail variants a pure loss always shows, so this stays at 1; on the bosonic ones a lost walker can read as a valid 0.",
+    plain: "The fidelity counting only the runs whose output looks right: the visible failures are thrown away. A lost walker shows on the qudit and dual-rail variants, but on the others it can pass for a 0.",
     anchor: "noise-heralding",
   },
   noise_events: {
     name: "Noise events per run",
     help: "Quantum jumps, gate failures, copy errors and coherent splits (over-rotated gates, imbalanced crossings) recorded in one run; memory flips, clock jitter and pruning are not counted.",
+    plain: "How many errors happened in one run: walkers lost or flipped, gates that failed, wrong copies, small coherent errors.",
     anchor: "noise",
   },
 };
@@ -111,6 +123,7 @@ function fmt(key: string, x: number): string {
 /** `discarded`: weight dropped by pruning in this run; fidelity and success are then lower bounds. */
 function MetricRow({ k, value, discarded = 0 }: { k: string; value: number; discarded?: number }) {
   const info = METRICS[k];
+  const register = useRegister();
   const bad = (info?.nearOne && value < 1 - 1e-9) || (info?.nearZero && value > 1e-12);
   const bound = info?.boundedByDiscard && discarded > 0;
   return (
@@ -128,7 +141,7 @@ function MetricRow({ k, value, discarded = 0 }: { k: string; value: number; disc
         {bound ? "≥ " : ""}
         {fmt(k, value)}
       </span>
-      {info && <Scripted text={info.help} className="pn-metric-help" />}
+      {info && (register === "plain" ? <Glossed text={info.plain} className="pn-metric-help" /> : <Scripted text={info.help} className="pn-metric-help" />)}
     </div>
   );
 }

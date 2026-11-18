@@ -41,13 +41,15 @@ function rank(e: EventJSON): number {
 }
 
 /** The sentence to show at trajectory frame `frame`: the most telling event of the most
- *  recent frame that has one. */
-export function captionAt(traj: Trajectory, frame: number): string {
+ *  recent frame that has one. `plain`: the plain wording when the engine wrote one. */
+export function captionAt(traj: Trajectory, frame: number, register: "plain" | "technical" = "technical"): string {
+  const plain = register === "plain";
   for (let f = Math.min(frame, traj.frames.length - 1); f >= 0; f--) {
     const events = traj.frames[f]!.events.filter((e) => rank(e) < 9);
     if (events.length === 0) continue;
     const best = events.reduce((a, b) => (rank(b) < rank(a) ? b : a));
+    if (plain && best.text_plain) return best.text_plain;
     return best.kind === "phase" ? firstSentence(best.text) : best.text;
   }
-  return "Input state: the train waits on the port line, front slot first.";
+  return plain ? "The train waits at the input port." : "Input state: the train waits on the port line, front slot first.";
 }
