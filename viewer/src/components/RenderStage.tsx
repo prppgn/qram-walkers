@@ -14,6 +14,7 @@ import { usePlayback, type Theme, type ViewOptions } from "../playback/store";
 import { Timeline } from "./Controls";
 import { Ket } from "./Ket";
 import { layoutFor, lensFrameOf, lensShownAt, TreeScene } from "./TreeCanvas";
+import { lodProps, useFitScale } from "./useFitScale";
 
 const MAX_KETS = 4;
 
@@ -116,9 +117,10 @@ export function RenderStage() {
     // only these options change the layout
     [traj, view.mirror, view.spacing, view.orientation],
   );
-  if (!traj || !layout) return <div className="render-stage" data-testid="render-empty" />;
   // the video frames the drawing and, for the whole run, the place of the lens
-  const box = sceneBounds(layout, lensFrameOf(traj, layout, view));
+  const box = traj && layout ? sceneBounds(layout, lensFrameOf(traj, layout, view)) : { x: 0, y: 0, w: 1, h: 1 };
+  const [svgRef, k] = useFitScale(box);
+  if (!traj || !layout) return <div className="render-stage" data-testid="render-empty" />;
 
   const cur = traj.frames[frame]!;
   const { meta } = traj;
@@ -137,7 +139,7 @@ export function RenderStage() {
         </span>
       </header>
       <div className={`canvas render-canvas${view.figure ? " figure" : ""}`}>
-        <svg viewBox={`${box.x} ${box.y} ${box.w} ${box.h}`} preserveAspectRatio="xMidYMid meet" width="100%" height="100%">
+        <svg ref={svgRef} viewBox={`${box.x} ${box.y} ${box.w} ${box.h}`} preserveAspectRatio="xMidYMid meet" width="100%" height="100%" {...lodProps(layout, traj.meta, k)}>
           <g className="scene-root">
             <TreeScene traj={traj} layout={layout} frame={frame} progress={progress} view={view} highlight={null} lens={{ chosen: null }} />
           </g>

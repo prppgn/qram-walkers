@@ -8,10 +8,12 @@ import "./panels.css";
 
 const W = 44;
 const H = 26;
+// Drawn at 1.75 times the canvas units, so that the letters inside reach 13 px.
+const ZOOM = 1.75;
 
 function Glyph({ children, label }: { children: ReactNode; label: string }) {
   return (
-    <svg width={W} height={H} viewBox={`0 0 ${W} ${H}`} role="img" aria-label={label}>
+    <svg width={W * ZOOM} height={H * ZOOM} viewBox={`0 0 ${W} ${H}`} role="img" aria-label={label}>
       {children}
     </svg>
   );

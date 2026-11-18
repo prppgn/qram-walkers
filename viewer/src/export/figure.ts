@@ -38,6 +38,10 @@ function inlineStyles(src: Element, dst: Element, skipped: Element[]): void {
     return;
   }
   const cs = getComputedStyle(src);
+  if (cs.display === "none") {
+    skipped.push(dst);
+    return;
+  }
   const isText = src.tagName === "text" || src.tagName === "tspan";
   const parts: string[] = [];
   for (const prop of [...COMMON, ...(isText ? TEXT : [])]) {
@@ -55,23 +59,31 @@ function inlineStyles(src: Element, dst: Element, skipped: Element[]): void {
   for (let i = 0; i < from.length; i++) inlineStyles(from[i]!, to[i]!, skipped);
 }
 
-/** `fn` with the page in `theme`: styles are recomputed on demand, no repaint happens. */
-function withTheme<T>(theme: Theme, fn: () => T): T {
+/** `fn` with the page in `theme` and the drawing `svg` at its natural text sizes, every
+ *  label shown (on screen the text is scaled back with the zoom and what does not fit is
+ *  hidden, see layout/lod.ts): styles are recomputed on demand, no repaint happens. */
+function withTheme<T>(theme: Theme, svg: SVGSVGElement, fn: () => T): T {
   const root = document.documentElement;
   const saved = root.dataset.theme;
+  const savedClass = svg.getAttribute("class");
+  const savedTk = svg.style.getPropertyValue("--tk");
   root.dataset.theme = theme;
+  svg.removeAttribute("class");
+  svg.style.setProperty("--tk", "1000");
   try {
     return fn();
   } finally {
     if (saved === undefined) delete root.dataset.theme;
     else root.dataset.theme = saved;
+    if (savedClass !== null) svg.setAttribute("class", savedClass);
+    svg.style.setProperty("--tk", savedTk);
   }
 }
 
 /** Standalone SVG of the live drawing `svg` (its `.scene-root` group) in `theme`, framing
  *  `box` (drawing coordinates: the drawing, and the lens when it is open). */
 export function sceneSvg(svg: SVGSVGElement, box: Rect, theme: Theme): string {
-  return withTheme(theme, () => {
+  return withTheme(theme, svg, () => {
     const scene = svg.querySelector(".scene-root");
     if (!scene) throw new Error("no scene to export");
     const copy = scene.cloneNode(true) as Element;

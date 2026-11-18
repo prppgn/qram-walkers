@@ -137,7 +137,7 @@ function withScripts(base: string, sub: string, sup: string): string {
 /** TeX of what sits inside a ket or a bracket: walker states R, B upright, every other
  *  symbol as in a formula (|a⟩, |b^(a)⟩, ⟨ψ_ideal|ψ_out⟩). */
 function innerTex(inner: string): string | null {
-  if (/[\s{}\\]/.test(inner)) return null;
+  if (/[\s\\]/.test(inner)) return null;
   return formulaBodyTex(inner, "RB");
 }
 

@@ -7,7 +7,7 @@
 // and leave through the entrance, tail first. A superposition that reaches several cells
 // shows the heaviest one, with tabs for the others; highlighting a branch shows its cell.
 // Positions come from lensScene (data only); this file only draws.
-import { useId, useMemo, type PointerEvent as ReactPointerEvent } from "react";
+import { useId, useMemo, type CSSProperties, type PointerEvent as ReactPointerEvent } from "react";
 import { modulus } from "../layout/kets";
 import { lensGeometry, lensRect, lensScene, type LensGeom, type Rect } from "../layout/lens";
 import { cellBoxes, type Layout, type Point } from "../layout/unfoldedH";
@@ -54,7 +54,7 @@ export function GateLabel({ label }: { label: string }) {
   return (
     <>
       {m[1]}
-      <tspan dy={3} fontSize="0.75em">
+      <tspan dy={3} className="svg-sub">
         {m[2]}
       </tspan>
       <tspan dy={-3}>{m[3]}</tspan>
@@ -155,6 +155,7 @@ export function CellLens({
         data-cell={cell.l}
         data-phase={scene.turning ? "turn" : cur.phase}
         transform={`translate(${rect.x},${rect.y}) scale(${rect.scale})`}
+        style={{ "--ls": rect.scale } as CSSProperties}
       >
         <defs>
           <clipPath id={clip}>
@@ -304,7 +305,7 @@ export function CellLens({
                         {slot.backup ? (
                           <circle r={1.6} className="backup-dot" />
                         ) : (
-                          <text y={3.2} textAnchor="middle" className="walker-glyph">
+                          <text y={4} textAnchor="middle" className="walker-glyph">
                             {colourOf(w.s)}
                           </text>
                         )}

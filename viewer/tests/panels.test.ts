@@ -244,7 +244,7 @@ describe("number formatting", () => {
     ]);
     expect(tex("|11⟩: |α|² = 0.5 on |R⟩")).toEqual(["\\lvert 11\\rangle", "\\lvert \\alpha\\rvert^{2}", "\\lvert \\mathrm{R}\\rangle"]);
     expect(tex("Û_○ ⊕ Û_● and 2^n cells")).toEqual(["\\hat{U}_{\\circ }", "\\hat{U}_{\\bullet }", "2^{n}"]);
-    expect(tex("|⟨ψ_ideal|ψ_out⟩|² with |b^(a)⟩_D and ⟨N⟩")).toEqual([
+    expect(tex("|⟨ψ_ideal|ψ_out⟩|² with |b^{(a)}⟩_D and ⟨N⟩")).toEqual([
       "\\lvert\\langle \\psi_{\\text{ideal}}\\vert \\psi_{\\text{out}}\\rangle\\rvert^{2}",
       "\\lvert b^{(a)}\\rangle_{D}",
       "\\langle N\\rangle",

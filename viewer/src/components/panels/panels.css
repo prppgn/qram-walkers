@@ -622,8 +622,8 @@ table.grid.pn-res td {
 /* ---------- legend */
 .pn-legend {
   display: grid;
-  grid-template-columns: 44px 1fr;
-  gap: 6px 8px;
+  grid-template-columns: 77px 1fr;
+  gap: 6px 10px;
   align-items: center;
   font-size: 13px;
 }
@@ -727,6 +727,6 @@ table.grid.pn-res td {
 }
 .pn-legend .lg-text {
   fill: var(--ink-2);
-  font-size: 7px;
+  font-size: 7.5px;
   font-family: var(--font);
 }

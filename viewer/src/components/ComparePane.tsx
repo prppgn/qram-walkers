@@ -10,6 +10,7 @@ import { comparisonConfig, defaultPartner, noiseDropped } from "./compareModel";
 import { InfoButton } from "./Panel";
 import { VARIANTS } from "./setup/configModel";
 import { layoutFor, TreeScene } from "./TreeCanvas";
+import { lodProps, useFitScale } from "./useFitScale";
 
 function variantLabel(id: string): string {
   return VARIANTS.find((v) => v.id === id)?.label ?? id;
@@ -23,6 +24,7 @@ function Side({ traj, pos, view, testId }: { traj: Trajectory; pos: number; view
   );
   const last = traj.frames.length - 1;
   const { frame, progress } = instantAt(pos, last);
+  const [svgRef, k] = useFitScale({ w: layout.width, h: layout.height });
   const fidelity = traj.final.metrics.fidelity;
   const done = pos >= last;
   return (
@@ -37,7 +39,16 @@ function Side({ traj, pos, view, testId }: { traj: Trajectory; pos: number; view
         </span>
       </div>
       <div className={`canvas${view.figure ? " figure" : ""}`}>
-        <svg viewBox={`0 0 ${layout.width} ${layout.height}`} preserveAspectRatio="xMidYMid meet" width="100%" height="100%" role="img" aria-label={`${traj.meta.variant} variant`}>
+        <svg
+          ref={svgRef}
+          viewBox={`0 0 ${layout.width} ${layout.height}`}
+          preserveAspectRatio="xMidYMid meet"
+          width="100%"
+          height="100%"
+          role="img"
+          aria-label={`${traj.meta.variant} variant`}
+          {...lodProps(layout, traj.meta, k)}
+        >
           <TreeScene traj={traj} layout={layout} frame={frame} progress={progress} view={view} highlight={null} />
         </svg>
       </div>

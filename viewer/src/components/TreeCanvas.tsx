@@ -7,8 +7,9 @@
 // `TreeScene` is the drawing alone, used by the interactive canvas, the render stage of
 // the video and figure exports, and the comparison pane; figure mode (DESIGN.md §7.6)
 // adds (d,l) labels and kets near the train and drops the flashes.
-import { Fragment, memo, useCallback, useEffect, useId, useMemo, useRef, useState } from "react";
+import { Fragment, memo, useCallback, useEffect, useId, useMemo, useRef, useState, type CSSProperties } from "react";
 import type { EventJSON, MetaJSON, Trajectory } from "../model/types";
+import { gateSpots, lodClasses, lodFor } from "../layout/lod";
 import { cellBoxes, computeLayout, DEFAULT_LAYOUT, edgeKey, insideCell, type CellBox, type Layout, type Point } from "../layout/unfoldedH";
 import { ketTokens, phaseDeg, modulus } from "../layout/kets";
 import { TREE_GATES, windowGroups } from "../layout/gates";
@@ -61,6 +62,7 @@ const StaticTree = memo(function StaticTree({
   };
   const anchor = vertical ? "start" : "middle";
   const treeName = layout.trees > 1 ? `, ${TREE_NAMES[tree]}` : "";
+  const treeArrow = layout.trees > 1 ? (tree === 0 ? " ↑" : " ↓") : "";
   // Long dual-rail labels start at the edge of the drawing, so that they are not clipped.
   const wide = layout.trees > 1 && !vertical;
   const inPos = vertical
@@ -114,25 +116,43 @@ const StaticTree = memo(function StaticTree({
             Array.from({ length: n }, (_, i) => i + 1).map((d) => {
               const q = m(levelAt(d));
               return (
-                <text key={d} x={q.x} y={q.y} className="level-label" textAnchor={anchor}>
-                  {`level ${d}${si ? "′" : ""}`}
-                </text>
+                <g key={d}>
+                  <text x={q.x} y={q.y} className="level-label lvl-long" textAnchor={anchor}>
+                    {`level ${d}${si ? "′" : ""}`}
+                  </text>
+                  <text x={q.x} y={q.y} className="level-label lvl-short" textAnchor={anchor}>
+                    {`${d}${si ? "′" : ""}`}
+                  </text>
+                </g>
               );
             })}
           {levelLabels && si === 0 && (
-            <text x={vertical ? 4 : layout.xCells} y={vertical ? layout.xCells : 16} className="level-label" textAnchor={anchor}>
-              {vertical ? "cells" : "memory cells"}
-            </text>
+            <>
+              <text x={vertical ? 4 : layout.xCells} y={vertical ? layout.xCells : 16} className="level-label lvl-long" textAnchor={anchor}>
+                {vertical ? "cells" : "memory cells"}
+              </text>
+              <text x={vertical ? 4 : layout.xCells} y={vertical ? layout.xCells : 16} className="level-label lvl-short" textAnchor={anchor}>
+                cells
+              </text>
+            </>
           )}
         </g>
       ))}
-      <text x={inPos.x} y={inPos.y} className="port-label" textAnchor={vertical || wide ? "start" : "end"}>
+      <text x={inPos.x} y={inPos.y} className="port-label port-long" textAnchor={vertical || wide ? "start" : "end"}>
         {figure ? `|ψ_in⟩${treeName}` : `input port${treeName}`}
       </text>
+      <text x={inPos.x} y={inPos.y} className="port-label port-short" textAnchor={vertical || wide ? "start" : "end"}>
+        {`${figure ? "|ψ_in⟩" : "input"}${treeArrow}`}
+      </text>
       {layout.opts.mirror && (
-        <text x={outPos.x} y={outPos.y} className="port-label" textAnchor={wide ? "end" : "start"}>
-          {figure ? `|ψ_out⟩${treeName}` : `output port${treeName}`}
-        </text>
+        <>
+          <text x={outPos.x} y={outPos.y} className="port-label port-long" textAnchor={wide ? "end" : "start"}>
+            {figure ? `|ψ_out⟩${treeName}` : `output port${treeName}`}
+          </text>
+          <text x={outPos.x} y={outPos.y} className="port-label port-short" textAnchor={wide ? "end" : "start"}>
+            {`${figure ? "|ψ_out⟩" : "output"}${treeArrow}`}
+          </text>
+        </>
       )}
       <title>{`${meta.variant} variant, n = ${meta.n}, m = ${meta.m}`}</title>
     </g>
@@ -209,7 +229,12 @@ function GateLayer({
                   </g>
                 );
               })}
-              <text x={lp.x + off.x} y={lp.y + off.y} className="gate-label" textAnchor={layout.opts.orientation === "vertical" ? "end" : "middle"}>
+              <text
+                x={lp.x + off.x}
+                y={lp.y + off.y}
+                className={grp.type === "U_in" ? "gate-label gate-label-in" : "gate-label"}
+                textAnchor={layout.opts.orientation === "vertical" ? "end" : "middle"}
+              >
                 <GateLabel label={grp.label} />
               </text>
             </g>
@@ -326,7 +351,8 @@ function CellLayer({
             ? { x: b.x + (b.w - size) / 2, y: b.y + b.h - 5 - run + i * (size + 3) }
             : { x: b.x + (b.w - run) / 2 + i * (size + 3), y: b.y + b.h - size - 5 };
         const rotate = vertical && meta.n >= 3;
-        const labelAt = rotate ? { x: b.x + b.w / 2, y: b.y + b.h * 0.32 } : { x: b.x + b.w / 2, y: b.y + 12 };
+        // Horizontal labels hang from the top of the box (dy = 0.8em), whatever their size.
+        const labelAt = rotate ? { x: b.x + b.w / 2, y: b.y + b.h * 0.32 } : { x: b.x + b.w / 2, y: b.y + 3.5 };
         const state = lit > 0 ? `; the train is inside (weight ${lit.toFixed(3)})` : grey > 0 ? "; only dispersed address walkers inside" : "";
         return (
           <g
@@ -342,9 +368,16 @@ function CellLayer({
             {lit > 0 && <rect x={b.x} y={b.y} width={b.w} height={b.h} rx={4} className="cell-lit" data-cell={c.l} style={{ fillOpacity: 0.2 + 0.8 * lit }} />}
             {copyFired.get(c.l) && <rect x={b.x} y={b.y} width={b.w} height={b.h} rx={4} className="cell-active" style={{ opacity: 0.4 + 0.6 * pulse }} />}
             {lensCell === c.l && tree === anchorTree && <rect x={b.x - 3} y={b.y - 3} width={b.w + 6} height={b.h + 6} rx={6} className="lens-target" />}
-            <text x={labelAt.x} y={labelAt.y} textAnchor="middle" className="cell-label" transform={rotate ? `rotate(-90 ${labelAt.x} ${labelAt.y})` : undefined}>
+            <text
+              x={labelAt.x}
+              y={labelAt.y}
+              dy={rotate ? undefined : "0.8em"}
+              textAnchor="middle"
+              className="cell-label"
+              transform={rotate ? `rotate(-90 ${labelAt.x} ${labelAt.y})` : undefined}
+            >
               {c.address}
-              {layout.trees > 1 ? (tree === 0 ? " ↑" : " ↓") : ""}
+              {layout.trees > 1 && <tspan className="cell-arrow">{tree === 0 ? " ↑" : " ↓"}</tspan>}
             </text>
             {showBits &&
               dataSlots.map((s, i) => {
@@ -441,7 +474,7 @@ function WalkerLayer({
               <g key={`stray-${i}`} transform={`translate(${st.p.x + off.x},${st.p.y + off.y})`} className={`walker stray ${discClass(st.s)}`} data-testid="stray">
                 <circle r={R + 3} className="stray-ring" />
                 <circle r={R} className="disc" />
-                <text y={3.2} textAnchor="middle" className="walker-glyph">
+                <text y={4} textAnchor="middle" className="walker-glyph">
                   {st.s}
                 </text>
                 {labels && !insideCell(layout, st.p) && (
@@ -476,7 +509,7 @@ function WalkerLayer({
                   {slot.backup ? (
                     <circle r={1.6} className="backup-dot" />
                   ) : (
-                    <text y={3.2} textAnchor="middle" className="walker-glyph">
+                    <text y={4} textAnchor="middle" className="walker-glyph">
                       {colourOf(w.s)}
                     </text>
                   )}
@@ -538,8 +571,11 @@ function KetAnnotations({
         // above the walker; when the train is inside a cell (root on the left), outside the
         // cell, on the side facing away from the middle of the column: above the upper cells,
         // below the lower ones
+        // Distances that depend on the text are in em: on screen the text grows when the
+        // tree is small (never under 13 px), and the kets keep their distance from the cells.
         let at = lead.p;
         let off = layout.across(-(R + 34 + 13 * i));
+        let dy: string | undefined;
         if (lead.inCell && layout.opts.orientation !== "vertical") {
           const box = nearestBox(layout, lead.p);
           const column = cellBoxes(layout).filter((b) => b.tree === box.tree);
@@ -548,31 +584,33 @@ function KetAnnotations({
           const side = `${box.tree}:${box.l}:${upper}`;
           const j = beside.get(side) ?? 0;
           beside.set(side, j + 1);
-          at = { x: lead.p.x, y: upper ? box.y : box.y + box.h };
-          off = { x: 0, y: upper ? -(12 + 13 * j) : 22 + 13 * j };
+          // above: clear of the walker count drawn on the corner of the box (radius 6.5)
+          at = { x: lead.p.x, y: upper ? box.y - 7 : box.y + box.h };
+          off = { x: 0, y: 0 };
+          dy = upper ? `${-(0.9 + 1.24 * j)}em` : `${2.1 + 1.24 * j}em`;
         }
         // Estimated width, to keep the sentence inside the drawing.
         const half = (tokens.length * (view.ketPositions ? 32 : 18)) / 2;
         const x = Math.max(half + 2, Math.min(layout.width - half - 2, at.x + off.x));
         return (
-          <text key={b.id} x={x} y={Math.min(layout.height - 4, Math.max(12, at.y + off.y))} textAnchor="middle" className="ket-annotation">
+          <text key={b.id} x={x} y={dy ? at.y : Math.min(layout.height - 4, Math.max(12, at.y + off.y))} dy={dy} textAnchor="middle" className="ket-annotation">
             {tokens.map((t) => (
               <Fragment key={t.k}>
                 |<tspan className={`g-${colourOf(t.s) ?? "E"}`}>{t.glyph}</tspan>
                 {view.ketPositions && t.sup ? (
                   <>
-                    <tspan dy={-4} fontSize="0.72em">
+                    <tspan dy="-0.38em" className="svg-script">
                       {t.sup}
                     </tspan>
-                    <tspan dy={4}>⟩</tspan>
+                    <tspan dy="0.38em">⟩</tspan>
                   </>
                 ) : (
                   "⟩"
                 )}
-                <tspan dy={3} fontSize="0.72em">
+                <tspan dy="0.29em" className="svg-script">
                   {t.sub}
                 </tspan>
-                <tspan dy={-3}> </tspan>
+                <tspan dy="-0.29em"> </tspan>
               </Fragment>
             ))}
           </text>
@@ -703,6 +741,7 @@ export function TreeCanvas() {
     // only these options change the layout
     [traj, view.mirror, view.spacing, view.orientation],
   );
+  const spots = useMemo(() => (traj && layout ? gateSpots(layout, traj.meta) : []), [traj, layout]);
 
   // Fit frames the drawing and, when the run reaches a cell, the lens.
   const reserve = traj && layout && view.lens && !lensClosed && hasLens(traj);
@@ -789,7 +828,15 @@ export function TreeCanvas() {
       }}
       onDoubleClick={fit}
     >
-      <svg ref={svg} width="100%" height="100%" role="img" aria-label="Binary tree with the walker train">
+      <svg
+        ref={svg}
+        width="100%"
+        height="100%"
+        role="img"
+        aria-label="Binary tree with the walker train"
+        className={lodClasses(lodFor(layout, vp.k, view.lensAt.scale, spots))}
+        style={{ "--tk": vp.k } as CSSProperties}
+      >
         <g className="scene-root" transform={`translate(${vp.x},${vp.y}) scale(${vp.k})`}>
           <TreeScene
             traj={traj}

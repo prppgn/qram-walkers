@@ -110,7 +110,7 @@
   position: absolute;
   left: 8px;
   bottom: 8px;
-  font-size: 11px;
+  font-size: 13px;
   padding: 2px 8px;
   border-radius: 6px;
   background: var(--noise-soft);
@@ -168,6 +168,47 @@
 .canvas .site {
   fill: var(--site);
 }
+/* Level of detail (layout/lod.ts): text is never drawn under 13 px; what does not fit at
+   the current zoom is shortened or left out. */
+.canvas .lvl-short {
+  display: none;
+}
+.canvas svg.lod-levels-short .lvl-long,
+.canvas svg.lod-levels-none .level-label {
+  display: none;
+}
+.canvas svg.lod-levels-short .lvl-short {
+  display: inline;
+}
+.canvas .port-short,
+.canvas svg.lod-ports-short .port-long,
+.canvas svg.lod-ports-none .port-label {
+  display: none;
+}
+.canvas svg.lod-ports-short .port-short {
+  display: inline;
+}
+.canvas svg.lod-node .node text,
+.canvas svg.lod-node .cell-count text,
+.canvas svg.lod-glyph .walker-glyph,
+.canvas svg.lod-lglyph .lens-glyph,
+.canvas svg.lod-lglyph .cell-lens .walker-glyph,
+.canvas svg.lod-wlabel .walker-label,
+.canvas svg.lod-gates-main .gate-label-in,
+.canvas svg.lod-gates-none .gate-label,
+.canvas svg.lod-cell .cell-label,
+.canvas svg.lod-cell-short .cell-arrow {
+  display: none;
+}
+
+/* Sub- and superscripts in the tree (Û_in, the kets of figure mode): three quarters of
+   their text, never under 13 px. */
+.canvas .svg-sub {
+  font-size: max(0.75em, calc(13px / (var(--tk, 1) * var(--ls, 1))));
+}
+.canvas .svg-script {
+  font-size: max(0.72em, calc(13px / var(--tk, 1)));
+}
 .canvas .node circle {
   fill: var(--surface);
   stroke: var(--edge);
@@ -180,12 +221,12 @@
 }
 .canvas .edge-label {
   font-family: var(--serif);
-  font-size: 8.5px;
+  font-size: max(8.5px, calc(13px / var(--tk, 1)));
   fill: var(--ink-2);
 }
 .canvas .ket-annotation {
   font-family: var(--serif);
-  font-size: 10.5px;
+  font-size: max(10.5px, calc(13px / var(--tk, 1)));
   fill: var(--ink);
   paint-order: stroke;
   stroke: var(--surface);
@@ -206,7 +247,7 @@
 }
 .canvas .level-label,
 .canvas .port-label {
-  font-size: 10px;
+  font-size: max(10px, calc(13px / var(--tk, 1)));
   fill: var(--ink-2);
 }
 .canvas .gate-band {
@@ -266,7 +307,7 @@
   stroke: var(--flash-idle);
 }
 .canvas .gate-label {
-  font-size: 11px;
+  font-size: max(11px, calc(13px / var(--tk, 1)));
   font-family: var(--serif);
   fill: var(--gate-line);
 }
@@ -330,7 +371,7 @@
   cursor: move;
 }
 .canvas .lens-title {
-  font-size: 11px;
+  font-size: max(11px, calc(13px / (var(--tk, 1) * var(--ls, 1))));
   font-family: var(--mono);
   fill: var(--ink);
 }
@@ -339,7 +380,7 @@
   fill: var(--ink-2);
 }
 .canvas .lens-text {
-  font-size: 9.5px;
+  font-size: max(9.5px, calc(13px / (var(--tk, 1) * var(--ls, 1))));
   font-family: var(--mono);
 }
 .canvas .lens-close {
@@ -350,7 +391,7 @@
   stroke: var(--line);
 }
 .canvas .lens-close text {
-  font-size: 11px;
+  font-size: max(11px, calc(13px / (var(--tk, 1) * var(--ls, 1))));
   fill: var(--ink-2);
 }
 .canvas .lens-tab rect {
@@ -365,7 +406,7 @@
   cursor: pointer;
 }
 .canvas .lens-tab text {
-  font-size: 9.5px;
+  font-size: max(9.5px, calc(13px / (var(--tk, 1) * var(--ls, 1))));
   font-family: var(--mono);
   fill: var(--ink);
 }
@@ -387,7 +428,7 @@
   stroke-linecap: round;
 }
 .canvas .lens-gate {
-  font-size: 10px;
+  font-size: max(10px, calc(13px / (var(--tk, 1) * var(--ls, 1))));
   fill: var(--ink);
 }
 .canvas .lens-mem rect {
@@ -418,7 +459,7 @@
   cursor: nwse-resize;
 }
 .canvas .cell-label {
-  font-size: 10px;
+  font-size: max(10px, calc(13px / var(--tk, 1)));
   font-family: var(--mono);
   fill: var(--ink);
 }
@@ -470,13 +511,13 @@
   stroke-dasharray: 2.2 1.6;
 }
 .canvas .walker-glyph {
-  font-size: 8px;
+  font-size: 11.5px;
   font-weight: 700;
   fill: #fff;
   pointer-events: none;
 }
 .canvas .walker-label {
-  font-size: 8px;
+  font-size: max(8px, calc(13px / var(--tk, 1)));
   fill: var(--ink-2);
 }
 .canvas .phase-ring {
@@ -791,10 +832,6 @@
 }
 .render-kets .ket {
   font-size: 24px;
-}
-.render-kets .ket sub,
-.render-kets .ket sup {
-  font-size: 0.68em;
 }
 .render-ket {
   display: flex;
