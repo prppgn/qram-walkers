@@ -144,7 +144,8 @@ class Simulator:
         self._eps: dict[tuple[int, str, int, int], float] = {}
         self._eta: dict[tuple[int, int, int, int], float] = {}
         self.discarded = 0.0
-        self._pruned_count = 0
+        self._pruned_count = 0  # below prune_eps
+        self._capped_count = 0  # beyond max_branches
         self._pruned_weight = 0.0
         self._name_counts: dict[int, int] = defaultdict(int)
         if self.config.options.strict and self.active:
@@ -377,36 +378,43 @@ class Simulator:
     def _prune(self, state: SparseState) -> SparseState:
         if not self.coherent:
             return state
+        before = len(state)
         w = state.prune(self.config.options.prune_eps)
-        dropped = 0
+        dropped, capped = before - len(state), 0
         cap = self.config.options.max_branches
         if len(state) > cap:
             keep = sorted(state, key=lambda b: abs(b.amp), reverse=True)[:cap]
             w += sum(abs(b.amp) ** 2 for b in state) - sum(abs(b.amp) ** 2 for b in keep)
-            dropped = len(state) - cap
+            capped = len(state) - cap
             state = SparseState(keep, next_bid=state.next_bid)
         if w > 0:
             self.discarded += w
             self._pruned_count += dropped
+            self._capped_count += capped
             self._pruned_weight += w
         return state
 
     def _prune_event(self, events: list[Event]) -> None:
-        count, weight = self._pruned_count, self._pruned_weight
+        count, capped, weight = self._pruned_count, self._capped_count, self._pruned_weight
         if weight > 0:
             events.append(
                 {
                     "kind": "noise",
                     "model": "prune",
-                    "count": count,
+                    "count": count + capped,
                     "weight": weight,
                     "text": narration.prune_text(
-                        count, weight, self.discarded, self.config.options.prune_eps
+                        count,
+                        weight,
+                        self.discarded,
+                        self.config.options.prune_eps,
+                        capped=capped,
+                        cap=self.config.options.max_branches,
                     ),
                     "text_plain": narration.prune_plain(weight, self.discarded),
                 }
             )
-        self._pruned_count = 0
+        self._pruned_count = self._capped_count = 0
         self._pruned_weight = 0.0
 
     # -- public --------------------------------------------------------------------
@@ -597,7 +605,17 @@ class Simulator:
                 "fired_in": fired_in,
                 "changes": changes,
                 "text": narration.gate_text(
-                    gate, self.variant, fired_in, len(state), self.branch_names, changes
+                    gate,
+                    self.variant,
+                    fired_in,
+                    len(state),
+                    self.branch_names,
+                    changes,
+                    reads=ctx.reads,
+                    controls=sorted(ctx.controls),
+                    ideal=not self.disturbed,
+                    frozen=frozen,
+                    failed=len(failed),
                 ),
                 "text_plain": narration.gate_plain(
                     gate,

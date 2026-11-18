@@ -23,6 +23,7 @@ if TYPE_CHECKING:
     from .variants import Variant
 
 MAX_LISTED = 3
+_COPY_KINDS = (GateKind.COPY_GLOBAL, GateKind.COPY_CELL, GateKind.COPY_BACKUP)
 _COLOUR = {"R": "red", "B": "blue", "E": "absent (∅)"}
 _GLYPH = {
     "oR": "○R",
@@ -195,6 +196,96 @@ def _cell(variant: Variant, l: int) -> str:
     return f"cell {l} = |{variant.geometry.address_of_cell(l)}⟩"
 
 
+class CopyRead(NamedTuple):
+    """What one copy gate did to one data walker in one branch (both registers)."""
+
+    branch: int  # branch id
+    cell: str  # address of the memory cell, e.g. "10"
+    target: str  # label of the data walker the copy is meant for
+    walker: str | None  # label of the walker found on its site, "stray", or None if empty
+    stored: int  # bit stored in the cell
+    read: int  # bit the copy used (the stored bit, inverted by a copy error)
+    before: str  # local state before the copy ("R", "fR", "dR"; "E" for no walker)
+    after: str
+
+
+def _ket(s: str) -> str:
+    return "|∅⟩" if s == "E" else f"|{_glyph(s)}⟩"
+
+
+def _join_or(items: Sequence[str]) -> str:
+    """``A``, ``A or B``, ``A, B or C``."""
+    return items[0] if len(items) == 1 else f"{', '.join(items[:-1])} or {items[-1]}"
+
+
+def _ctrl_label(gate: GateInstance, variant: Variant) -> str:
+    return (
+        variant.slots[gate.control_slot].label if gate.control_slot is not None else "the control"
+    )
+
+
+def _active(kind: GateKind, family: str) -> tuple[str, str]:
+    """What activates a walker-controlled gate: (``is red``, ``red walker``)."""
+    if kind is GateKind.U_B:
+        return "is blue", "blue walker"
+    if kind is GateKind.U_IN and family == "qudit":
+        return "carries a 1 (●)", "walker carrying a 1 (●)"
+    return "is red", "red walker"
+
+
+def _control_place(gate: GateInstance, variant: Variant) -> tuple[str, set[str]]:
+    """Where the control sits and which walkers the protocol expects there.
+
+    A dual-rail Û_B is controlled by the backup on either tree: the place is ``Ã₂`` and
+    both ``Ã₂↑`` and ``Ã₂↓`` are expected (the schedule names the ↓ one)."""
+    ctrl = _ctrl_label(gate, variant)
+    if gate.kind is GateKind.U_B and _family(variant) == "dualrail" and ctrl[-1:] in ("↑", "↓"):
+        place = ctrl[:-1]
+        return place, {place + "↑", place + "↓"}
+    return ctrl, {ctrl}
+
+
+def _copy_result(
+    reads: Sequence[CopyRead], family: str, changes: Sequence[Mapping[str, Any]], variant: Variant
+) -> str:
+    """What a copy did to its target sites, from the records of what it found there."""
+    verb, kept = {
+        "qudit": ("flips to ○R", "leaves the data walkers in ●R"),
+        "dualrail": ("turns blue", "leaves the data walkers red"),
+    }.get(family, ("erases", "leaves the data walkers red"))
+    if not reads:  # no record of the target sites: what changed is all we know
+        touched = Counter(variant.slots[int(c["k"])].label for c in changes)
+        if not touched:
+            return f"{kept} (stored bits = 1)"
+        return f"{verb} " + ", ".join(f"{name} in {n} branch(es)" for name, n in touched.items())
+    changed: Counter[str] = Counter()
+    # what the copy found where its target walker is missing: (what, effect) → branches
+    odd: Counter[tuple[str, str]] = Counter()
+    unchanged = [r for r in reads if r.walker == r.target and r.before == r.after]
+    for r in reads:
+        if r.walker == r.target:
+            if r.before != r.after:
+                changed[r.target] += 1
+        elif r.walker is None and r.after == "E":
+            odd[(f"the site of {r.target} empty (∅)", "nothing to act on")] += 1
+        elif r.walker is None:
+            effect = f"b = {r.read} maps |∅⟩ → {_ket(r.after)}, a new walker"
+            odd[(f"the site of {r.target} empty", effect)] += 1
+        else:
+            who = "a stray walker" if r.walker == "stray" else r.walker
+            odd[(f"{who} on the site of {r.target}", f"{_ket(r.before)} → {_ket(r.after)}")] += 1
+    parts = []
+    if changed:
+        parts.append(
+            f"{verb} " + ", ".join(f"{name} in {n} branch(es)" for name, n in changed.items())
+        )
+    elif unchanged:
+        bits = "stored bits = 1" if all(r.stored == r.read for r in unchanged) else "bits read = 1"
+        parts.append(f"{kept} ({bits})")
+    parts += [f"finds {what} in {n} branch(es): {effect}" for (what, effect), n in odd.items()]
+    return "; ".join(parts)
+
+
 def gate_text(
     gate: GateInstance,
     variant: Variant,
@@ -202,105 +293,173 @@ def gate_text(
     n_branches: int,
     branch_names: Mapping[int, str],
     changes: Sequence[Mapping[str, Any]],
+    *,
+    reads: Sequence[CopyRead] = (),
+    controls: Sequence[str] = (),
+    ideal: bool = True,
+    frozen: int = 0,
+    failed: int = 0,
 ) -> str:
-    """Sentence for one gate instance firing at one tick."""
+    """Sentence for one gate instance firing at one tick.
+
+    The keyword arguments are what the engine saw, as for :func:`gate_plain`: ``controls``
+    the walkers that activated the gate (named when they are not the scheduled control),
+    ``reads`` what a copy found on each target site, ``frozen`` the branches stopped by a
+    collision, ``failed`` the edges or memory lanes where a gate failure stopped it. With
+    ``ideal`` false (noise has acted) an idle control is described by what sits on its site,
+    not by the ideal protocol (an absent address walker)."""
+    kind = gate.kind
     inverse = gate.phase is Phase.INVERSE
     head = f"{gate.label}" + (" (inverse routing; self-adjoint)" if inverse else "")
-    ctrl = variant.slots[gate.control_slot].label if gate.control_slot is not None else None
+    ctrl = _ctrl_label(gate, variant)
+    place, expected = _control_place(gate, variant)
+    if controls and set(controls) <= expected:
+        ctrl_now = _join_or(list(controls))
+    elif controls:
+        who = _join_or(["a stray walker" if c == "stray" else c for c in controls])
+        ctrl_now = f"{who} (on the control site of {place})"
+    else:
+        ctrl_now = ctrl
     n_fired = len(fired_in)
     walker_changes = [c for c in changes if not c.get("ghost")]
     family = _family(variant)
     idle_ctrl = "absent (∅)" if family == "bosonic" else "not in an activating state"
-    if gate.kind in (GateKind.OUT_S, GateKind.OUT_SDAG, GateKind.X_C):
+    _, active_walker = _active(kind, family)
+    cell_gate = kind in _COPY_KINDS or kind in (GateKind.CELL_ON, GateKind.CELL_OFF)
+    unit = "memory lane(s)" if cell_gate else "edge(s)"
+    flow = kind in (GateKind.OUT_S, GateKind.OUT_SDAG, GateKind.X_C)
+    # a gate that fires nowhere because of noise says so
+    if n_fired == 0 and not flow:
+        if failed:
+            return f"{head}: a gate failure stopped it on {failed} {unit} → identity everywhere."
+        if frozen >= n_branches > 0:
+            which = "its branch is" if n_branches == 1 else "every branch is"
+            return f"{head}: {which} frozen by a collision → identity."
+
+    def nowhere(idle: str, quantifier: str = " in any branch") -> str:
+        """``idle`` in every branch that still runs (noisy runs)."""
+        if frozen:
+            return (
+                f"{idle} in the branches still running, the other {frozen} branch(es) are frozen "
+                "by a collision"
+            )
+        return idle + (quantifier if n_branches > 1 else "")
+
+    def rest(idle: str, always: bool) -> str:
+        """Why nothing happens in the branches where the gate did not fire."""
+        n_rest = n_branches - n_fired
+        if n_rest <= 0 or not (always or frozen or failed):
+            return ""
+        if not (frozen or failed):
+            return f"; in the other {n_rest} branch(es) {idle} → identity"
+        why = [idle] if n_rest > frozen else []
+        if failed:
+            why.append(f"a gate failure on {failed} {unit}")
+        if frozen:
+            why.append(f"{frozen} branch(es) frozen by a collision")
+        return f"; in the other {n_rest} branch(es) nothing fires ({', or '.join(why)})"
+
+    if flow:
         moved = sorted({int(c["k"]) for c in walker_changes})
         what = {
             GateKind.OUT_S: "sends the blue data walkers of the ↓ lane to the auxiliary rail, red",
             GateKind.OUT_SDAG: "merges the auxiliary rail into the ↑ lane: the walkers arrive blue",
             GateKind.X_C: "resets the data walkers on the ↑ lane to red (clocked colour NOT)",
-        }[gate.kind]
+        }[kind]
         if not moved:
             return f"{head} (output circuit of every cell) acts on no walker: nothing to move."
         return (
             f"{head} (output circuit of the cells) {what}: "
             f"{_names(variant, moved)}{_branches(n_fired, n_branches)}."
         )
-    if gate.kind is GateKind.U:
+    if kind is GateKind.U:
         n_edges = variant.geometry.n_edges(gate.level)
         where = (
             f"edge ({gate.level},1)"
             if n_edges == 1
             else f"the {n_edges} edges ({gate.level},·) of level {gate.level}"
         )
+        idle = (
+            f"{ctrl} is {idle_ctrl}"
+            if ideal
+            else f"no red walker sits on the control site of {ctrl}"
+        )
         if n_fired == 0:
-            return (
-                f"{head} fires on {where}: the control {ctrl} is {idle_ctrl} in every branch "
-                "→ identity."
-            )
+            if ideal and not frozen:
+                return (
+                    f"{head} fires on {where}: the control {ctrl} is {idle_ctrl} in every "
+                    "branch → identity."
+                )
+            return f"{head} fires on {where}: {nowhere(idle)} → identity."
         flipped = sorted({int(c["k"]) for c in walker_changes})
         x = {"qudit": "X̂ᶜ'⁰ / X̂ᶜ'¹", "dualrail": "X̂ (on the tree of the control)"}.get(family, "X̂")
         what = f"{x} flips {_names(variant, flipped)}" if flipped else "no walker sits behind it"
         if family == "qudit":
             what += " (a red ○ control flips the ○ walkers, a red ● control the ● walkers)"
         if n_branches == 1:
-            return f"{head} fires on {where}: {ctrl} is red → {what}."
+            return f"{head} fires on {where}: {ctrl_now} is red → {what}."
         listed = ", ".join(branch_names.get(b, f"#{b}") for b in fired_in[:MAX_LISTED])
         more = "" if n_fired <= MAX_LISTED else f" and {n_fired - MAX_LISTED} more"
-        rest = (
-            f"; in the other {n_branches - n_fired} branch(es) {ctrl} is {idle_ctrl} → identity"
-            if n_fired < n_branches
-            else ""
-        )
         return (
-            f"{head} fires on {where}: {ctrl} is red in {n_fired} of {n_branches} branches "
-            f"({listed}{more}) → {what} there{rest}."
+            f"{head} fires on {where}: {ctrl_now} is red in {n_fired} of {n_branches} branches "
+            f"({listed}{more}) → {what} there{rest(idle, always=True)}."
         )
-    if gate.kind in (GateKind.U_IN, GateKind.U_B):
+    if kind in (GateKind.U_IN, GateKind.U_B):
         n_edges = variant.geometry.n_edges(gate.level)
         where = (
             f"edge ({gate.level},1)"
             if n_edges == 1
             else f"the {n_edges} edges of level {gate.level}"
         )
-        colour = "red" if gate.kind is GateKind.U_IN else "blue"
-        if family == "qudit" and gate.kind is GateKind.U_IN:
+        colour = "red" if kind is GateKind.U_IN else "blue"
+        if family == "qudit" and kind is GateKind.U_IN:
             colour = "a 1 (●)"
+        if not ideal:
+            idle = f"no {active_walker} sits on the control site of {place}"
+        elif len(expected) > 1:
+            idle = f"neither {place}↑ nor {place}↓ is blue"
+        elif kind is GateKind.U_IN:
+            idle_in = {"qudit": "a 0 (○)", "bosonic": "absent (∅)"}.get(family, idle_ctrl)
+            idle = f"the control {ctrl} is {idle_in}"
+        else:
+            idle = f"the control {ctrl} is {'red or absent' if family == 'bosonic' else 'red'}"
         if n_fired == 0:
-            if gate.kind is GateKind.U_IN:
-                idle = {"qudit": "a 0 (○)", "bosonic": "absent (∅)"}.get(family, idle_ctrl)
-            else:
-                idle = "red or absent" if family == "bosonic" else "red"
-            return f"{head} on {where}: the control {ctrl} is {idle} everywhere → identity."
+            if ideal and not frozen:
+                return f"{head} on {where}: {idle} everywhere → identity."
+            return f"{head} on {where}: {nowhere(idle)} → identity."
         flipped = sorted({int(c["k"]) for c in walker_changes})
         x = "X̂ᶜ" if family == "qudit" else "X̂"
         what = f"{x} flips {_names(variant, flipped)}" if flipped else "its targets are empty"
-        return f"{head} on {where}: {ctrl} is {colour}{_branches(n_fired, n_branches)} → {what}."
-    if gate.kind in (GateKind.COPY_GLOBAL, GateKind.COPY_CELL, GateKind.COPY_BACKUP):
-        trigger = f"{ctrl} is red" if gate.kind is not GateKind.COPY_CELL else "its switch F is on"
-        if n_fired == 0:
-            return f"{head}: no memory lane where {trigger} → identity everywhere."
-        verb, kept = {
-            "qudit": ("flips to ○R", "leaves the data walkers in ●R (stored bits = 1)"),
-            "dualrail": ("turns blue", "leaves the data walkers red (stored bits = 1)"),
-        }.get(family, ("erases", "leaves the data walkers red (stored bits = 1)"))
-        touched = Counter(variant.slots[int(c["k"])].label for c in walker_changes)
-        result = (
-            f"{verb} " + ", ".join(f"{name} in {cnt} branch(es)" for name, cnt in touched.items())
-            if touched
-            else kept
+        return (
+            f"{head} on {where}: {ctrl_now} is {colour}{_branches(n_fired, n_branches)} → "
+            f"{what}{rest(idle, always=False)}."
         )
+    if kind in _COPY_KINDS:
+        trigger = f"{ctrl_now} is red" if kind is not GateKind.COPY_CELL else "its switch F is on"
+        if n_fired == 0:
+            if kind is GateKind.COPY_CELL or (ideal and not frozen):
+                return f"{head}: no memory lane where {trigger} → identity everywhere."
+            idle = f"no red walker sits on the control site of {ctrl} in any memory lane"
+            return f"{head}: {nowhere(idle, quantifier='')} → identity everywhere."
+        result = _copy_result(reads, family, walker_changes, variant)
+        tail = rest(f"no red walker on the control site of {ctrl}", always=False)
         return (
             f"{head} acts in the lane(s) where {trigger}{_branches(n_fired, n_branches)}: "
-            f"the local copy {result}."
+            f"the local copy {result}{tail}."
         )
-    if gate.kind in (GateKind.CELL_ON, GateKind.CELL_OFF):
-        action = "on" if gate.kind is GateKind.CELL_ON else "off"
+    if kind in (GateKind.CELL_ON, GateKind.CELL_OFF):
+        action = "on" if kind is GateKind.CELL_ON else "off"
         if n_fired == 0:
-            return f"{head}: {ctrl} is {idle_ctrl} everywhere → no switch changes."
+            if ideal and not frozen:
+                return f"{head}: {ctrl} is {idle_ctrl} everywhere → no switch changes."
+            idle = f"no red walker sits on the control site of {ctrl} in any memory lane"
+            return f"{head}: {nowhere(idle, quantifier='')} → no switch changes."
+        tail = rest(f"no red walker on the control site of {ctrl}", always=False)
         return (
-            f"{head}: {ctrl} is red in the addressed lane(s){_branches(n_fired, n_branches)} "
-            f"→ the cell switch F is turned {action}."
+            f"{head}: {ctrl_now} is red in the addressed lane(s){_branches(n_fired, n_branches)} "
+            f"→ the cell switch F is turned {action}{tail}."
         )
-    raise ValueError(gate.kind)
+    raise ValueError(kind)
 
 
 def scatter_text(
@@ -474,9 +633,17 @@ def imbalance_text(new_branches: int) -> str:
     )
 
 
-def prune_text(count: int, weight: float, total: float, eps: float) -> str:
+def prune_text(
+    count: int, weight: float, total: float, eps: float, *, capped: int = 0, cap: int = 0
+) -> str:
+    """``count`` branches dropped below ``eps``, ``capped`` beyond the ``cap`` largest."""
+    dropped = []
+    if count:
+        dropped.append(f"{count} branch(es) below |α|² = {eps:g}")
+    if capped:
+        dropped.append(f"{capped} branch(es) beyond the {cap} largest (max_branches)")
     return (
-        f"Pruning: {count} branch(es) below |α|² = {eps:g} dropped, weight {weight:.3g} "
+        f"Pruning: {' and '.join(dropped) or 'branches'} dropped, weight {weight:.3g} "
         f"(total discarded so far {total:.3g}); fidelity and success are lower bounds."
     )
 
@@ -487,19 +654,6 @@ def prune_text(count: int, weight: float, total: float, eps: float) -> str:
 # and gate names are kept as drawn on screen. ``ideal`` is false in runs with active noise:
 # the sentences then drop the explanations that hold only for the ideal protocol (an
 # absent address walker means bit 0, a red walker will take the left branch …).
-
-
-class CopyRead(NamedTuple):
-    """What one copy gate did to one data walker in one branch (plain narration)."""
-
-    branch: int  # branch id
-    cell: str  # address of the memory cell, e.g. "10"
-    target: str  # label of the data walker the copy is meant for
-    walker: str | None  # label of the walker found on its site, "stray", or None if empty
-    stored: int  # bit stored in the cell
-    read: int  # bit the copy used (the stored bit, inverted by a copy error)
-    before: str  # local state before the copy ("R", "fR", "dR"; "E" for no walker)
-    after: str
 
 
 _PLAIN_COLOUR = {"R": "red", "B": "blue"}
@@ -650,26 +804,6 @@ def turn_plain(variant: Variant) -> str:
     )
 
 
-def _join_or(items: Sequence[str]) -> str:
-    """``A``, ``A or B``, ``A, B or C``."""
-    return items[0] if len(items) == 1 else f"{', '.join(items[:-1])} or {items[-1]}"
-
-
-def _ctrl_label(gate: GateInstance, variant: Variant) -> str:
-    return (
-        variant.slots[gate.control_slot].label if gate.control_slot is not None else "the control"
-    )
-
-
-def _active(kind: GateKind, family: str) -> tuple[str, str]:
-    """What activates a walker-controlled gate: (``is red``, ``red walker``)."""
-    if kind is GateKind.U_B:
-        return "is blue", "blue walker"
-    if kind is GateKind.U_IN and family == "qudit":
-        return "carries a 1 (●)", "walker carrying a 1 (●)"
-    return "is red", "red walker"
-
-
 def gate_plain(
     gate: GateInstance,
     variant: Variant,
@@ -694,11 +828,7 @@ def gate_plain(
     acted) the sentence keeps to what the engine saw, without the ideal-protocol reasons."""
     kind = gate.kind
     ctrl = _ctrl_label(gate, variant)
-    # a dual-rail Û_B is controlled by the backup on either tree (Ã₂↑ or Ã₂↓)
-    place, expected = ctrl, {ctrl}
-    if kind is GateKind.U_B and _family(variant) == "dualrail" and ctrl[-1:] in ("↑", "↓"):
-        place = ctrl[:-1]
-        expected = {place + "↑", place + "↓"}
+    place, expected = _control_place(gate, variant)
     # the walker that activated the gate, when it is not the one the protocol expects there
     if controls and set(controls) <= expected:
         ctrl_now = _join_or(controls)
@@ -751,9 +881,6 @@ def gate_plain(
         again = " again" if kind is GateKind.CELL_OFF else ""
         return f"{gate.label}: {ctrl_now} is red, so it switches {cells} {action}{again}."
     raise ValueError(kind)
-
-
-_COPY_KINDS = (GateKind.COPY_GLOBAL, GateKind.COPY_CELL, GateKind.COPY_BACKUP)
 
 
 def _flip_plain(
