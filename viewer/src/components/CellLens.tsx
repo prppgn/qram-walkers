@@ -152,6 +152,7 @@ export function CellLens({
       <g
         className="cell-lens"
         data-testid="cell-lens"
+        data-tour="lens"
         data-cell={cell.l}
         data-phase={scene.turning ? "turn" : cur.phase}
         transform={`translate(${rect.x},${rect.y}) scale(${rect.scale})`}

@@ -23,6 +23,8 @@ import { DetailsButton, DetailsDrawer } from "./components/shell/DetailsDrawer";
 import { ExamplesMenu } from "./components/shell/ExamplesMenu";
 import { ModeSwitch } from "./components/shell/ModeSwitch";
 import { ViewMenu } from "./components/shell/ViewMenu";
+import { Tour, TutorialButton, Welcome } from "./components/tour/Tour";
+import { useTour } from "./components/tour/tourStore";
 
 const QUICK_PRESETS = ["E1", "E2", "E1-switch", "E3", "E4", "demo-uniform", "qudit-short", "dualrail"];
 const TABS = ["Phasors", "Metrics", "Resources", "Events", "Legend"] as const;
@@ -51,6 +53,8 @@ function useKeyboard() {
     const onKey = (e: KeyboardEvent) => {
       const el = e.target as HTMLElement;
       if (el && (el.tagName === "INPUT" || el.tagName === "TEXTAREA" || el.tagName === "SELECT" || el.isContentEditable)) return;
+      const tour = useTour.getState();
+      if (tour.welcome || tour.step !== null) return; // the tutorial has its own keys
       const s = usePlayback.getState();
       if (e.key === " ") {
         e.preventDefault();
@@ -122,6 +126,7 @@ function SimpleTopBar() {
       <DetailsButton />
       <ModeSwitch />
       <ThemeButton />
+      <TutorialButton />
       <GuideButton />
     </header>
   );
@@ -212,6 +217,7 @@ function TopBar() {
       >
         Compare
       </button>
+      <TutorialButton />
       <GuideButton />
     </header>
   );
@@ -311,6 +317,8 @@ export function App() {
       <SetupDrawer />
       {compareOpen && <ComparePane />}
       <HelpPanel />
+      <Tour />
+      <Welcome />
     </div>
   );
 }

@@ -90,7 +90,12 @@ const StaticTree = memo(function StaticTree({
           {layout.nodes.map((nd) => {
             const q = m(nd.p);
             return (
-              <g key={`${nd.d},${nd.l}`} transform={`translate(${q.x},${q.y})`} className="node">
+              <g
+                key={`${nd.d},${nd.l}`}
+                transform={`translate(${q.x},${q.y})`}
+                className="node"
+                data-tour={si === 0 && nd.d === 1 && nd.l === 1 ? "switch" : undefined}
+              >
                 <title>{`${si ? "Ŝ†" : "Ŝ"} at bifurcation (${nd.d},${nd.l})`}</title>
                 <circle r={6.5} />
                 <text y={2.8} textAnchor="middle">
@@ -138,10 +143,10 @@ const StaticTree = memo(function StaticTree({
           )}
         </g>
       ))}
-      <text x={inPos.x} y={inPos.y} className="port-label port-long" textAnchor={vertical || wide ? "start" : "end"}>
+      <text x={inPos.x} y={inPos.y} className="port-label port-long" data-tour="input-port" textAnchor={vertical || wide ? "start" : "end"}>
         {figure ? `|ψ_in⟩${treeName}` : `input port${treeName}`}
       </text>
-      <text x={inPos.x} y={inPos.y} className="port-label port-short" textAnchor={vertical || wide ? "start" : "end"}>
+      <text x={inPos.x} y={inPos.y} className="port-label port-short" data-tour="input-port" textAnchor={vertical || wide ? "start" : "end"}>
         {`${figure ? "|ψ_in⟩" : "input"}${treeArrow}`}
       </text>
       {layout.opts.mirror && (
@@ -222,6 +227,7 @@ function GateLayer({
                     <path
                       d={segment(grp.level, l, grp.sites[0], grp.sites[1], mirrored)}
                       className={grp.type === "U_in" ? "gate-band gate-in" : "gate-band"}
+                      data-tour={!mirrored && grp.level === 1 && l === 1 ? "gate-window" : undefined}
                     >
                       <title>{`${grp.tip} — edge (${grp.level},${l})`}</title>
                     </path>
@@ -233,6 +239,7 @@ function GateLayer({
                 x={lp.x + off.x}
                 y={lp.y + off.y}
                 className={grp.type === "U_in" ? "gate-label gate-label-in" : "gate-label"}
+                data-tour={!mirrored && grp.level === 1 ? "gate-label" : undefined}
                 textAnchor={layout.opts.orientation === "vertical" ? "end" : "middle"}
               >
                 <GateLabel label={grp.label} />
@@ -334,7 +341,7 @@ function CellLayer({
   const anchorTree = layout.trees > 1 ? 1 : 0;
   const m = dataSlots.length;
   return (
-    <g className="cells">
+    <g className="cells" data-tour="cells">
       {layout.cells.map((c) => {
         const b = c.box;
         const bits = meta.memory[c.l - 1] ?? [];
@@ -459,7 +466,7 @@ function WalkerLayer({
   const rings = B > 1 && !(figure && new Set(branches.map((b) => Math.round(phaseDeg(b.amp)))).size === 1);
   const spread = Math.min(5, 12 / Math.max(B, 1));
   return (
-    <g className="walkers">
+    <g className="walkers" data-tour="train">
       {branches.map((b, bi) => {
         const a = modulus(b.amp);
         const weight = opacityMode === "prob" ? a * a : a;

@@ -3,6 +3,7 @@ import { useEffect, useRef, useState } from "react";
 import "katex/dist/katex.min.css";
 import { GUIDE, pageOfAnchor } from "../help/guide";
 import { usePlayback } from "../playback/store";
+import { useTour } from "./tour/tourStore";
 
 export function HelpPanel() {
   const { helpOpen, helpAnchor, closeHelp } = usePlayback();
@@ -70,6 +71,13 @@ export function HelpPanel() {
               // Cross-page links of the guide: "gates.md#gate-U", "#anchor", "faq.md".
               const a = (e.target as HTMLElement).closest("a");
               const href = a?.getAttribute("href") ?? "";
+              if (href === "#start-tutorial") {
+                // the guide's "Take the tutorial" link starts it
+                e.preventDefault();
+                closeHelp();
+                useTour.getState().start();
+                return;
+              }
               const m = /^(?:\.\/)?([\w-]+)\.md(?:#([\w-]+))?$|^#([\w-]+)$/.exec(href);
               if (!a) return;
               if (!m) {
