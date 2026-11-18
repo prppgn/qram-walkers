@@ -3,6 +3,7 @@
 // writes the inventory, one line per control.
 import { readFileSync, writeFileSync } from "node:fs";
 import { expect, test, type Page } from "@playwright/test";
+import { SEEN } from "./storage";
 
 interface Control {
   surface: string;
@@ -178,7 +179,7 @@ test("the guide opens on Start, and its links lead to the right places", async (
 });
 
 test.describe("Simple mode", () => {
-  test.use({ storageState: { cookies: [], origins: [] } });
+  test.use({ storageState: SEEN });
 
   test("every control has a tooltip and the guide names it", async ({ page }) => {
     const all: Control[] = [];
@@ -204,6 +205,13 @@ test.describe("Simple mode", () => {
       await page.getByTestId(`details-${tab}`).click();
       await take(`details ${tab}`, "[data-testid='details-drawer']");
     }
+    await page.keyboard.press("Escape");
+    // the tutorial's card, at its first and last step
+    await page.getByTestId("open-tutorial").click();
+    await take("tutorial", "[data-testid='tour']");
+    for (let i = 0; i < 7; i++) await page.getByTestId("tour-next").click();
+    await take("tutorial, last step", "[data-testid='tour']");
+    await page.getByTestId("tour-skip").click();
     const silent = all.filter((c) => !c.tip).map((c) => `${c.surface}: ${c.tag} ${c.testid} "${c.text}"`);
     expect(silent).toEqual([]);
     // preset names and their one-line descriptions are content, not controls

@@ -2,8 +2,9 @@
 // log that only grows, guided playback that stops at the key moments, the Details drawer,
 // the View menu and the layout of narrow windows.
 import { expect, test, type Page } from "@playwright/test";
+import { SEEN } from "./storage";
 
-test.use({ storageState: { cookies: [], origins: [] } });
+test.use({ storageState: SEEN });
 
 async function openE1(page: Page) {
   await page.goto("/");

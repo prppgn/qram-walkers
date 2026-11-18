@@ -1,17 +1,11 @@
 import { defineConfig, devices } from "@playwright/test";
+import { ADVANCED } from "./e2e/storage";
 
 // Starts the engine API and the Vite dev server, then drives the app in Chromium.
 // On macOS the bundled Chromium of this Playwright version is refused by recent
 // systems (code signature), so the installed Google Chrome is used there (temporary
 // profile); set PW_CHANNEL to override, or to "" for the bundled browser.
 const channel = process.env.PW_CHANNEL ?? (process.platform === "darwin" ? "chrome" : undefined);
-
-// The tests written for the full interface open it in Advanced mode, as a returning visitor
-// would; the specs about Simple mode and the first visit start from an empty profile.
-export const ADVANCED = {
-  cookies: [],
-  origins: [{ origin: "http://127.0.0.1:5173", localStorage: [{ name: "qram-mode", value: "advanced" }] }],
-};
 
 export default defineConfig({
   testDir: "e2e",
