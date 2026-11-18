@@ -161,6 +161,12 @@
 .learn-formula {
   margin-top: 10px;
   overflow-x: auto;
+  font-size: 16px;
+}
+/* the limits of a sum and the label of an arrow are drawn at 0.7 of the formula's size:
+   19.2 px keeps them at 13.4 px, above the 13 px floor */
+.learn-formula .katex {
+  font-size: 1.2em;
 }
 .learn-formula .katex-display {
   margin: 6px 0;
