@@ -220,6 +220,61 @@
   margin: 0 0 4px;
 }
 
+/* the narration log: grows downwards, scrolls, the current tick's lines highlighted */
+.pn-narration .panel-body {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+.pn-log {
+  overflow-y: auto;
+  max-height: 260px;
+  overscroll-behavior: contain;
+  padding-right: 2px;
+}
+.pn-narration.fill {
+  flex: 1 1 0;
+}
+.pn-narration.fill .panel-body {
+  flex: 1;
+}
+.pn-narration.fill .pn-log {
+  max-height: none;
+  flex: 1;
+}
+.pn-log-start,
+.pn-log-now {
+  margin: 0 0 6px;
+  font-size: 14px;
+}
+.pn-log-now {
+  margin: 6px 0 0;
+}
+.pn-log-section {
+  margin: 8px 0 2px;
+  padding-bottom: 2px;
+  border-bottom: 1px solid var(--line);
+  font-weight: 600;
+  font-size: 14px;
+  color: var(--ink-2);
+}
+.pn-log-line {
+  cursor: pointer;
+  border-radius: 5px;
+  padding: 2px 4px;
+}
+.pn-log-line:hover {
+  background: var(--accent-soft);
+}
+.pn-log-line:focus-visible {
+  outline: 2px solid var(--accent);
+}
+.pn-log-line.current,
+.pn-log-start.current {
+  background: var(--accent-soft);
+  box-shadow: inset 3px 0 0 var(--accent);
+}
+
 /* kind badges: gate / Ŝ / Ŝ† / inject / exit / phase / turn */
 .badge.k-gate {
   background: var(--gate);
