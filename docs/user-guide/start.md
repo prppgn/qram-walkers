@@ -14,6 +14,7 @@ companion with the gate tables of every variant, the *technical paper* (in prepa
 
 The program opens in **Simple** mode on the example **E1**: a classical address, $a = 10$,
 and one stored bit per cell. On the left of the tree the train waits at the input port.
+The [tutorial](#start-tutorial) shows the same things on the screen itself; or, by hand:
 
 1. Press **Space** (or ▶). The train enters, the walkers change colour, the train splits at
    the bifurcations. Playback stops at the key moments (the end of each level, the query,
@@ -33,6 +34,20 @@ and one stored bit per cell. On the left of the tree the train waits at the inpu
 
 Every number and position you see is computed by the simulation engine; the interface only
 draws them.
+
+## The tutorial {#start-tutorial}
+
+A guided tour of the interface in eight steps, on the example E1: the tree and its ports,
+the train and its colours, the scattering gate $\hat S$, the address-transmission gate
+$\hat U^{(d)}$, the memory cells and the lens, the caption and the narration, the playback
+controls, and where to go next. Each step dims the window except the part it talks about
+and moves the run to the moment it describes. **Got it**, at the end, plays E1 from the
+start with pauses at the key moments.
+
+It is offered by itself on the first visit; afterwards **Tutorial** in the top bar, in
+either mode, or this link takes it again: [take the tutorial](#start-tutorial). It runs in
+Simple mode and loads E1. The [Controls](controls.md#controls-tutorial) page lists its
+buttons and keys.
 
 ## How to get help {#start-help}
 

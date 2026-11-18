@@ -11,11 +11,11 @@ const pages = Object.fromEntries(
 
 // Anchors the viewer links to from ⓘ buttons and the narration's "Explain".
 const REQUIRED: Record<string, string[]> = {
-  start: ["start-tour", "start-help", "start-tasks"],
+  start: ["start-tour", "start-tutorial", "start-help", "start-tasks"],
   controls: [
     "controls", "controls-modes", "controls-topbar", "controls-tree", "controls-export", "controls-playback", "controls-state", "controls-panels",
     "controls-setup", "controls-input", "controls-memory", "controls-noise", "controls-options", "controls-presets",
-    "controls-compare", "controls-guide",
+    "controls-compare", "controls-tutorial", "controls-guide",
   ],
   cli: ["cli", "cli-app", "cli-shortcut", "cli-run", "cli-figure", "cli-sweep", "cli-scaling", "cli-python"],
   protocol: ["overview", "train", "encoding", "tree", "clock", "phases", "routing", "query", "inverse", "ghosts", "kets"],

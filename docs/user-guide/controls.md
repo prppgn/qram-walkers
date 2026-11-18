@@ -19,6 +19,7 @@ and control at once. Both modes play the same run.
 | **Details** | opens a drawer with the other panels, one at a time: **State**, **Metrics**, **Resources**, **Events**, **Phasors**, **Legend**, **Train** (the [train strip](ui.md#ui-train)); **×** or Esc closes it |
 | **Simple** / **Advanced** | switches mode |
 | **talk** / **paper** | the dark or the light theme |
+| **Tutorial** | the [tutorial](#controls-tutorial) |
 | **? Guide** | opens this guide |
 
 The Simple playback bar has ◀ and ▶︎| (one gate back or forward), ▶ / ⏸, **speed** and
@@ -42,6 +43,7 @@ The Simple playback bar has ◀ and ▶︎| (one gate back or forward), ▶ / �
 | **talk** / **paper** | switches between the dark theme, for projectors, and the light one; the choice is remembered |
 | **Simple** / **Advanced** | switches [mode](#controls-modes) |
 | **Compare** | opens the [comparison](#controls-compare) of two variants |
+| **Tutorial** | the [tutorial](#controls-tutorial), in Simple mode |
 | **? Guide** | opens this guide |
 
 ## Tree view {#controls-tree}
@@ -214,6 +216,22 @@ channels combine. The [Noise](noise.md#noise-families) page defines every model.
 | slider | the shared clock: drag to any tick |
 | **speed** | ticks per second |
 | **Close** | back to the main view (also Esc); the current run is untouched |
+
+## Tutorial {#controls-tutorial}
+
+The first visit opens a **Welcome** message: **Start tutorial** begins the
+[tutorial](start.md#start-tutorial), **Skip** (or Esc) closes it for good. **Tutorial** in the
+top bar takes the tour again at any time; it switches to Simple mode and loads E1.
+
+| control | what it does |
+|---|---|
+| **Next** | the next step (also →) |
+| **Back** | the previous step (also ←) |
+| **Skip** | closes the tutorial (also Esc); the run goes back to its start |
+| **Got it** | the last step's button: closes the tutorial and plays E1 from the start, pausing at the key moments |
+
+While the tutorial is open the rest of the window does not respond; Tab moves between its
+buttons, and Enter or Space presses the one in focus.
 
 ## User guide {#controls-guide}
 

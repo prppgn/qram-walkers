@@ -14,7 +14,8 @@ stops at the key moments of the run. The other panels are in the **Details** dra
 a time, and the drawing options in the **View** menu. **Advanced** mode shows everything
 at once: the train strip, the playback modes, the ket panel and the side tabs. The switch
 is in the top bar; the [Controls](controls.md#controls-modes) page lists what each mode
-has.
+has. A first visit offers the [tutorial](start.md#start-tutorial), a guided tour of the
+Simple screen; **Tutorial** in the top bar takes it again.
 
 **Guided playback.** With **Pause at key moments** ticked (the default in Simple mode),
 playback stops
@@ -365,8 +366,8 @@ this browser.
 | key | action |
 |---|---|
 | Space | play / pause; at a key moment of guided playback, continue |
-| → / ← | step forward / back in the current step mode |
+| → / ← | step forward / back in the current step mode; in the tutorial, the next / previous step |
 | Shift + → / ← | step by level |
 | Home / End | input / output state |
 | ? | open this page |
-| Esc | close the guide, the setup drawer, the Details drawer or an open menu |
+| Esc | close the guide, the setup drawer, the Details drawer, an open menu or the tutorial |
