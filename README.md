@@ -17,7 +17,9 @@ them as "the paper" and "technical paper, §Section".
 ![The viewer in Simple mode on the worked example E2, paused when the train reaches the memory cells](docs/figures/app.png)
 
 The viewer opens in **Simple** mode: a large tree, a caption, the narration as a log and
-pauses at the key moments of the run. **Advanced** mode shows every panel at once:
+pauses at the key moments of the run. New to the protocol? **Learn** tells it in ten short
+chapters with animations, and the underlined words explain themselves. **Advanced** mode
+shows every panel at once:
 
 ![The viewer in Advanced mode on the worked example E2, during the query](docs/figures/app-advanced.png)
 
@@ -44,7 +46,10 @@ Step by step, with troubleshooting: **[INSTALL.md](INSTALL.md)**.
 * **All six variants**: basic and backup, qudit short and long range, dual-rail basic and
   backup, checked against Eq. (1) of the paper exactly.
 * **Any input**: superpositions of addresses with your own amplitudes, any memory contents.
-* **The state at every tick**, in the paper's ket notation, with a sentence for every event.
+* **The state at every tick**, in the paper's ket notation, with a sentence for every event,
+  in plain words or in the paper's notation.
+* **Learn**: the protocol in ten short chapters, each with an animation of a real run, its
+  formulas and a button to try it; a glossary of the terms.
 * **Two modes**: Simple, for watching a run with pauses at its key moments, and Advanced, with
   every panel and control at once.
 * **Noise**: loss, flips, dephasing, depolarising, gate and clock errors, memory errors and coherent

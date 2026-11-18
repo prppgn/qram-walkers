@@ -15,12 +15,17 @@ and control at once. Both modes play the same run.
 |---|---|
 | **☰ Setup** | opens the [setup drawer](#controls-setup) |
 | **Examples** | a menu of ready-made [examples](#controls-presets), each with a one-line description; choosing one runs it |
-| **View** | a menu with the drawing options of the Advanced top bar: **labels**, **ghosts**, **traces**, **cell lens**, **unfolded**, **figure**, **orientation**, **spacing**, **opacity** (described [below](#controls-topbar)) |
+| **View** | a menu with the drawing options of the Advanced top bar: **labels**, **ghosts**, **traces**, **cell lens**, **unfolded**, **figure**, **orientation**, **spacing**, **opacity** (described [below](#controls-topbar)), and **wording** |
 | **Details** | opens a drawer with the other panels, one at a time: **State**, **Metrics**, **Resources**, **Events**, **Phasors**, **Legend**, **Train** (the [train strip](ui.md#ui-train)); **×** or Esc closes it |
 | **Simple** / **Advanced** | switches mode |
 | **talk** / **paper** | the dark or the light theme |
+| **Learn** | opens [Learn](#controls-learn): the protocol in ten short chapters with animations |
 | **Tutorial** | the [tutorial](#controls-tutorial) |
 | **? Guide** | opens this guide |
+
+**wording** (in the View menu) chooses how the caption and the narration speak:
+**follow the mode** (plain words in Simple, the paper's notation in Advanced), **plain** or
+**technical**; see [Plain or technical wording](ui.md#ui-wording).
 
 The Simple playback bar has ◀ and ▶︎| (one gate back or forward), ▶ / ⏸, **speed** and
 **Pause at key moments**, described [under Playback](#controls-playback).
@@ -40,9 +45,11 @@ The Simple playback bar has ◀ and ▶︎| (one gate back or forward), ▶ / �
 | **horizontal** / **vertical** | root of the tree on the left, or on top like Fig. 1 of the letter |
 | **proportional** / **uniform** | edge lengths proportional to their number of sites, or all levels equally long |
 | **opacity ∝ \|α\|²** / **opacity ∝ \|α\|** | how strongly a branch is drawn according to its amplitude |
+| **wording: follow the mode** / **wording: plain** / **wording: technical** | the [wording](ui.md#ui-wording) of the caption, the narration and the metric descriptions: the paper's notation (the default in Advanced) or plain words |
 | **talk** / **paper** | switches between the dark theme, for projectors, and the light one; the choice is remembered |
 | **Simple** / **Advanced** | switches [mode](#controls-modes) |
 | **Compare** | opens the [comparison](#controls-compare) of two variants |
+| **Learn** | opens [Learn](#controls-learn) |
 | **Tutorial** | the [tutorial](#controls-tutorial), in Simple mode |
 | **? Guide** | opens this guide |
 
@@ -232,6 +239,44 @@ top bar takes the tour again at any time; it switches to Simple mode and loads E
 
 While the tutorial is open the rest of the window does not respond; Tab moves between its
 buttons, and Enter or Space presses the one in focus.
+
+## Learn {#controls-learn}
+
+**Learn** in the top bar opens a full screen over the simulator ([more](ui.md#ui-learn)).
+The column on the left lists the chapters:
+
+1. **Why a quantum RAM**
+2. **Walkers on a tree**
+3. **Colour decides the turn**
+4. **The address walker instructs the others**
+5. **Reading a memory cell**
+6. **Coming back: time reversal**
+7. **Superpositions of addresses**
+8. **When things go wrong: noise**
+9. **Six ways to build it: the variants**
+10. **Where to go next**
+
+and then the **Glossary**.
+
+| control | what it does |
+|---|---|
+| a chapter in the list | shows that chapter |
+| **❚❚ Pause** / **▶ Play** | stops or restarts the animation; it loops over the frames the chapter is about |
+| **↺ Restart** | the animation from its first frame |
+| **Formulas** | unfolds the formulas of the chapter, in the paper's notation |
+| **Try it in the simulator** | loads the chapter's run into the simulator, closes Learn and plays it, pausing at the key moments |
+| **More in the guide** | opens this guide where the chapter's subject is explained in full |
+| **← previous chapter** / **next chapter →** | the chapter before or after; after the last one, **Glossary →** |
+| **In the guide** | (glossary) opens this guide where the term is defined |
+| **Back to the simulator** | closes Learn (also Esc); the run in the simulator is untouched |
+
+Each chapter has its own address, `#learn/<chapter>`, and the browser's Back button returns
+to the previous one.
+
+**Underlined words.** A word of the protocol underlined with a dotted line, in Learn, in the
+caption or in a metric description, shows its definition when the pointer is on it or the
+keyboard focus reaches it (Tab); a click or Enter opens this guide where it is defined; Esc
+hides the definition. See the [glossary](ui.md#ui-glossary).
 
 ## User guide {#controls-guide}
 

@@ -49,11 +49,28 @@ either mode, or this link takes it again: [take the tutorial](#start-tutorial). 
 Simple mode and loads E1. The [Controls](controls.md#controls-tutorial) page lists its
 buttons and keys.
 
+## Learn {#start-learn}
+
+**Learn**, in the top bar, tells how this quantum RAM works in ten short chapters, for
+readers who know qubits, gates and superpositions but not the paper: why a quantum RAM;
+walkers on a tree; colour decides the turn; the address walker instructs the others;
+reading a memory cell; coming back by time reversal; superpositions of addresses; noise;
+the six variants; where to go next. Each chapter has a few paragraphs in plain words, a
+looping animation of a run the engine computed, the formulas behind it (folded under
+**Formulas**), and **Try it in the simulator**, which loads that run here and plays it.
+A **Glossary** of the terms closes the list. [Open Learn](#learn); the
+[Controls](controls.md#controls-learn) page lists its buttons.
+
 ## How to get help {#start-help}
 
 * **Hover** over any control: a tooltip says what it does.
 * **ⓘ** next to a panel or a control opens the guide at the right place.
 * **Explain** in the Narration log opens the definition of what just happened.
+* **Underlined words** (a dotted line) show a short definition when you point at them; a
+  click opens this guide where they are defined. The [glossary](#learn/glossary) lists them
+  all.
+* **wording** in the View menu switches the sentences between plain words and the paper's
+  notation ([more](ui.md#ui-wording)).
 * [Simple and Advanced](ui.md#ui-modes) explains the two modes of the interface.
 * The [Controls](controls.md#controls) page describes every button, field and menu.
 
@@ -61,6 +78,7 @@ buttons and keys.
 
 | I want to… | go to |
 |---|---|
+| learn how it works, step by step | [Learn](#learn) |
 | understand the protocol | [Protocol](protocol.md#overview) |
 | know what a gate does | [Gates](gates.md#summary) |
 | see how the six variants differ | [Variants](variants.md#comparison) |

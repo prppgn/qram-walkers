@@ -29,6 +29,10 @@ playback stops
 A highlighted note under the tree says what has just happened; **Space** or a click on the
 note continues. Stepping and the timeline never stop at these moments.
 
+**Learn and the glossary.** [Learn](#ui-learn) tells the protocol in ten short chapters
+with animations; [underlined words](#ui-glossary) explain themselves; the sentences can be
+[plain or technical](#ui-wording).
+
 **Narrow windows.** Under 1100 pixels of width the panels move below the tree, which keeps
 at least 60% of the height of the window; scroll down to reach them.
 
@@ -37,6 +41,47 @@ its labels are scaled back up; what then does not fit is shortened ("level 1" be
 "input port, ↑ tree (logical 0)" becomes "input ↑") or left out (the letters inside the
 walkers and the nodes, the slot names, the cell addresses, gate labels that would overlap).
 Zoom in to see them again. Exports always carry every label at its natural size.
+
+## Learn {#ui-learn}
+
+**Learn** (top bar, both modes) covers the simulator with ten short chapters about the
+protocol, written for readers who know quantum information but not the paper. A chapter
+has, on the left, 150 to 300 words in plain language and the **Formulas** behind them,
+folded; on the right, an animation of a run computed by the engine, drawn exactly as in
+the simulator, which loops over the frames the chapter talks about, with the caption of
+each frame under it and the phase and tick beside **Pause** and **Restart**. **Try it in
+the simulator** loads the same run into the simulator and plays it with pauses at the key
+moments; **More in the guide** opens the page of this guide that goes further. The last
+page is the **Glossary**.
+
+The animations are stored with the page (runs with $n \le 2$, computed beforehand by the
+engine), so Learn works with no server and offline; **Try it** loads the stored run too.
+Every chapter has an address (`#learn/noise`, …) that can be shared; Esc or **Back to the
+simulator** closes Learn. The [Controls](controls.md#controls-learn) page lists every
+button.
+
+## Plain or technical wording {#ui-wording}
+
+The engine writes every sentence of a run twice. The **technical** wording uses the
+paper's notation, with edges, nodes, branches and gates, e.g. "Û⁽¹⁾ fires on edge (1,1):
+A₁ is red → X̂ flips D₀, D₁." The **plain** wording says the same in words, for a reader
+who has not seen the paper. The caption under the tree, the [narration](#ui-narration) log
+and Learn's captions use one or the other, and so do the descriptions of the metrics in
+the Metrics panel. By default the wording follows the mode, plain in Simple and technical
+in Advanced; **wording** (the View menu in Simple, the top bar in Advanced) forces one:
+**follow the mode**, **plain**, **technical**. The trajectory file keeps both sentences
+(`text`, `text_plain`).
+
+## The glossary {#ui-glossary}
+
+About thirty words of the protocol (walker, train, bifurcation, $\hat S$, $\hat U^{(d)}$,
+copy, branch, fidelity, loss, variant, …) are underlined with a dotted line where they
+appear in plain text: Learn, the caption, the plain metric descriptions. A word is
+underlined only the first time it appears in a block. Pointing at it, or reaching it with
+Tab, shows a short definition; a click or Enter opens this guide where the word is
+defined; Esc hides the definition. The narration log is not underlined, because each of
+its lines is a button that goes back to its tick. Learn's **Glossary** page lists every
+word with its definition.
 
 ## The tree view {#ui-canvas}
 
@@ -280,7 +325,8 @@ build:static`, the folder `viewer/dist-static`) needs no server: the same Python
 runs in your browser, in a background thread, through [Pyodide](https://pyodide.org). The
 first visit downloads Python and numpy from Pyodide's public CDN (about 20 MB, then
 cached) and shows its progress; so it needs a connection at least the first time. Results
-are those of the installed engine; long runs and ensembles are slower.
+are those of the installed engine; long runs and ensembles are slower. [Learn](#ui-learn)
+needs neither the server nor Python: its runs are stored with the page.
 
 ## Phasors {#ui-phasors}
 
@@ -370,4 +416,5 @@ this browser.
 | Shift + → / ← | step by level |
 | Home / End | input / output state |
 | ? | open this page |
-| Esc | close the guide, the setup drawer, the Details drawer, an open menu or the tutorial |
+| Esc | close the guide, the setup drawer, the Details drawer, an open menu, the tutorial or Learn; hide a definition |
+| Tab, Enter | in text, reach an underlined word and show its definition; Enter opens the guide there |
