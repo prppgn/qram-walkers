@@ -115,11 +115,12 @@ export const TOUR_STEPS: TourStep[] = [
     text:
       "Examples has ready-made runs, each described in one line: in E2 the address is a superposition of two addresses, and the train splits to read both cells at once. " +
       "Setup chooses the variant, the amplitudes of the addresses, the memory and the noise. " +
-      "Details shows the quantum state, the fidelity and the resources; Guide explains everything, and Tutorial shows this tour again.",
+      "Details shows the quantum state, the fidelity and the resources. Learn tells how the protocol works in ten short chapters with animations; Guide explains everything, and Tutorial shows this tour again.",
     targets: [
       "[data-testid='examples']",
       "[data-testid='open-setup']",
       "[data-testid='open-details']",
+      "[data-testid='open-learn']",
       "[data-testid='open-help']",
       "[data-testid='open-tutorial']",
     ],

@@ -4,6 +4,7 @@
 // it never touches the physics.
 import { create } from "zustand";
 import { usePlayback } from "../../playback/store";
+import { useLearn } from "../../learn/route";
 import { TOUR_STEPS } from "./steps";
 
 const SEEN_KEY = "qram-tour";
@@ -48,6 +49,7 @@ export const useTour = create<TourState>((set, get) => ({
 
   start() {
     markSeen();
+    if (useLearn.getState().page !== null) useLearn.getState().close();
     const p = usePlayback.getState();
     if (p.mode !== "simple") p.setMode("simple");
     p.setView({ lens: true, mirror: true, figure: false, labels: true, ghosts: true, orientation: "horizontal" });

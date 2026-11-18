@@ -3,6 +3,7 @@ import { useEffect, useRef, useState } from "react";
 import "katex/dist/katex.min.css";
 import { GUIDE, pageOfAnchor } from "../help/guide";
 import { usePlayback } from "../playback/store";
+import { pageOfHash, useLearn } from "../learn/route";
 import { useTour } from "./tour/tourStore";
 
 export function HelpPanel() {
@@ -76,6 +77,14 @@ export function HelpPanel() {
                 e.preventDefault();
                 closeHelp();
                 useTour.getState().start();
+                return;
+              }
+              const learn = pageOfHash(href);
+              if (learn !== null) {
+                // "Open Learn", "the glossary": Learn opens above the simulator, the guide closes
+                e.preventDefault();
+                closeHelp();
+                useLearn.getState().open(learn);
                 return;
               }
               const m = /^(?:\.\/)?([\w-]+)\.md(?:#([\w-]+))?$|^#([\w-]+)$/.exec(href);

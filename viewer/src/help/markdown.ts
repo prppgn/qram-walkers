@@ -14,7 +14,7 @@ export interface RenderedPage {
   title: string;
 }
 
-function renderMath(expr: string, display: boolean): string {
+export function renderMath(expr: string, display: boolean): string {
   return katex.renderToString(expr, { displayMode: display, throwOnError: false, macros: { ...MACROS } });
 }
 

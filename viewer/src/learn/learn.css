@@ -1,0 +1,254 @@
+/* Learn: a full screen above the simulator (and the compare view), below the guide. */
+.learn {
+  position: fixed;
+  inset: 0;
+  z-index: 26;
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr);
+  background: var(--bg);
+  color: var(--ink);
+}
+.learn-head {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 8px 14px;
+  border-bottom: 1px solid var(--line);
+  background: var(--surface);
+}
+.learn-head .spacer {
+  flex: 1;
+}
+.learn-sub {
+  font-size: 14px;
+}
+.learn-body {
+  display: grid;
+  grid-template-columns: 250px minmax(0, 1fr);
+  min-height: 0;
+}
+
+.learn-nav {
+  overflow-y: auto;
+  padding: 12px 8px;
+  border-right: 1px solid var(--line);
+}
+.learn-nav ol {
+  list-style: none;
+  margin: 0 0 8px;
+  padding: 0;
+}
+.learn-nav-item {
+  display: flex;
+  gap: 8px;
+  align-items: baseline;
+  width: 100%;
+  padding: 7px 10px;
+  border: 0;
+  border-radius: 6px;
+  background: none;
+  color: inherit;
+  font: inherit;
+  font-size: 15px;
+  text-align: left;
+  cursor: pointer;
+}
+.learn-nav-item:hover {
+  background: var(--accent-soft);
+}
+.learn-nav-item.active {
+  background: var(--accent-soft);
+  font-weight: 600;
+  box-shadow: inset 3px 0 0 var(--accent);
+}
+.learn-nav-item:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: -2px;
+}
+.learn-nav-num {
+  min-width: 1.4em;
+  color: var(--accent);
+  font-size: 14px;
+}
+.learn-nav-item.glossary {
+  border-top: 1px solid var(--line);
+  border-radius: 0 0 6px 6px;
+  padding-top: 10px;
+}
+
+.learn-main {
+  overflow-y: auto;
+  padding: 20px 28px 40px;
+}
+.learn-chapter {
+  display: grid;
+  grid-template-columns: minmax(320px, 560px) minmax(0, 1fr);
+  gap: 28px;
+  align-items: start;
+  max-width: 1400px;
+}
+.learn-text {
+  font-size: 16px;
+  line-height: 1.6;
+}
+.learn-text h1,
+.learn-glossary h1 {
+  margin: 0 0 12px;
+  font-size: 26px;
+  line-height: 1.25;
+}
+.learn-text h1:focus,
+.learn-glossary h1:focus {
+  outline: none;
+}
+.learn-kicker {
+  margin: 0 0 2px;
+  font-size: 14px;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+.learn-text p {
+  margin: 0 0 12px;
+}
+.learn-anim {
+  position: sticky;
+  top: 0;
+}
+
+.mini {
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.mini-canvas {
+  flex: none;
+  height: clamp(260px, 52vh, 560px);
+  min-height: 0;
+  cursor: default;
+}
+.mini-canvas > p {
+  margin: auto;
+}
+.mini-caption {
+  min-height: 3em;
+  font-size: 15px;
+  line-height: 1.45;
+}
+.mini-controls {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.mini-controls .spacer {
+  flex: 1;
+}
+.mini-time {
+  font-size: 13px;
+}
+
+.learn-formulas {
+  margin: 16px 0;
+  padding: 8px 12px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--surface);
+}
+.learn-formulas summary {
+  cursor: pointer;
+  font-weight: 600;
+}
+.learn-formula {
+  margin-top: 10px;
+  overflow-x: auto;
+}
+.learn-formula .katex-display {
+  margin: 6px 0;
+}
+.learn-formula p {
+  margin: 0 0 6px;
+  font-size: 14px;
+}
+.learn-actions,
+.learn-pager {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 16px;
+}
+.learn-pager {
+  justify-content: space-between;
+  padding-top: 14px;
+  border-top: 1px solid var(--line);
+}
+
+.learn-glossary {
+  max-width: 820px;
+}
+.learn-glossary dl {
+  margin: 16px 0 0;
+}
+.learn-term {
+  padding: 10px 0;
+  border-bottom: 1px solid var(--line);
+}
+.learn-term dt {
+  font-weight: 600;
+}
+.learn-term dd {
+  margin: 4px 0 0;
+  line-height: 1.5;
+}
+.linkish {
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--accent);
+  font: inherit;
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+@media (max-width: 1100px) {
+  .learn-chapter {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .learn-anim {
+    position: static;
+    order: -1;
+  }
+}
+@media (max-width: 760px) {
+  .learn-body {
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-rows: auto minmax(0, 1fr);
+  }
+  .learn-nav {
+    display: flex;
+    gap: 4px;
+    overflow-x: auto;
+    padding: 6px 16px;
+    border-right: 0;
+    border-bottom: 1px solid var(--line);
+  }
+  .learn-nav ol {
+    display: flex;
+    gap: 4px;
+    margin: 0;
+  }
+  .learn-nav-item {
+    width: auto;
+    white-space: nowrap;
+  }
+  .learn-nav-item.glossary {
+    border-top: 0;
+    border-radius: 6px;
+    padding-top: 7px;
+  }
+  .learn-main {
+    padding: 14px 16px 32px;
+  }
+  .learn-sub {
+    display: none;
+  }
+}

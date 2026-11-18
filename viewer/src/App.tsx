@@ -26,6 +26,8 @@ import { ViewMenu } from "./components/shell/ViewMenu";
 import { Tour, TutorialButton, Welcome } from "./components/tour/Tour";
 import { useTour } from "./components/tour/tourStore";
 import { GlossaryPopover } from "./components/glossary/Glossed";
+import { Learn, LearnButton } from "./learn/Learn";
+import { useLearn } from "./learn/route";
 
 const QUICK_PRESETS = ["E1", "E2", "E1-switch", "E3", "E4", "demo-uniform", "qudit-short", "dualrail"];
 const TABS = ["Phasors", "Metrics", "Resources", "Events", "Legend"] as const;
@@ -56,6 +58,7 @@ function useKeyboard() {
       if (el && (el.tagName === "INPUT" || el.tagName === "TEXTAREA" || el.tagName === "SELECT" || el.isContentEditable)) return;
       const tour = useTour.getState();
       if (tour.welcome || tour.step !== null) return; // the tutorial has its own keys
+      if (useLearn.getState().page !== null) return; // Learn covers the simulator
       const s = usePlayback.getState();
       if (e.key === " ") {
         e.preventDefault();
@@ -127,6 +130,7 @@ function SimpleTopBar() {
       <DetailsButton />
       <ModeSwitch />
       <ThemeButton />
+      <LearnButton />
       <TutorialButton />
       <GuideButton />
     </header>
@@ -225,6 +229,7 @@ function TopBar() {
       >
         Compare
       </button>
+      <LearnButton />
       <TutorialButton />
       <GuideButton />
     </header>
@@ -324,6 +329,7 @@ export function App() {
       {simple && <DetailsDrawer />}
       <SetupDrawer />
       {compareOpen && <ComparePane />}
+      <Learn />
       <HelpPanel />
       <Tour />
       <Welcome />
