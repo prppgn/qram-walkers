@@ -25,7 +25,7 @@ import cmath
 import itertools
 import math
 from collections import defaultdict
-from collections.abc import Sequence
+from collections.abc import Mapping, Sequence
 from dataclasses import dataclass, field, replace
 from enum import StrEnum
 from typing import Any, Protocol
@@ -109,6 +109,8 @@ class _Firing:
     failed: dict[int, bool] = field(default_factory=dict)  # edge → gate failure
     flipped: dict[int, bool] = field(default_factory=dict)  # lane → inverted copy
     strays: list[dict[str, Any]] = field(default_factory=list)
+    reads: list[narration.CopyRead] = field(default_factory=list)  # copies (plain narration)
+    controls: set[str] = field(default_factory=set)  # walkers that activated it (plain narration)
 
 
 class Simulator:
@@ -130,6 +132,9 @@ class Simulator:
         self.intended_memory = self.variant.memory_bits()
         self.memory, self.memory_flips = self._noisy_memory()
         self.schedule, self.jitter = self._jittered(self.variant.schedule())
+        # Until the first noise event every branch holds what the ideal run would: the plain
+        # narration explains the protocol only while this is false.
+        self.disturbed = bool(self.jitter or self.memory_flips)
         self.strict = self.config.options.strict and not self.active
         # coherent errors (DECISION D30)
         self.overrotations = [c for c in self.active if c.model == "overrotation"]
@@ -251,6 +256,41 @@ class Simulator:
     def _short(self, s: int) -> str:
         return self.rules.short(s)
 
+    def _copy_read(
+        self,
+        br: Branch,
+        gate: GateInstance,
+        l: int,
+        idx: int,
+        bit: int,
+        occupant: int | None,
+        slots: Sequence[Walker],
+        strays: Sequence[Stray],
+        table: Mapping[int, int],
+    ) -> narration.CopyRead:
+        """What a copy gate is about to do to one target site (for the plain narration)."""
+        j = gate.target_bits[idx]
+        target = self.variant.slots[gate.target_slots[idx]].label if gate.target_slots else f"D_{j}"
+        walker: str | None
+        if occupant is None:
+            walker, before = None, "E"
+            new = table[EMPTY] if self.rules.has_vacuum else None
+            after = self._short(new) if new is not None else "E"
+        else:
+            s = slots[occupant].s if occupant >= 0 else strays[-1 - occupant].w.s
+            walker = self.variant.slots[occupant].label if occupant >= 0 else "stray"
+            before, after = self._short(s), self._short(table[s])
+        return narration.CopyRead(
+            branch=br.bid,
+            cell=self.geometry.address_of_cell(l),
+            target=target,
+            walker=walker,
+            stored=self.memory[l - 1][j - 1],
+            read=bit,
+            before=before,
+            after=after,
+        )
+
     # -- coherent errors (DECISION D30) ----------------------------------------------
 
     def _sample(self, cache: dict[Any, float], key: Any, mean: float, sigma: float) -> float:
@@ -363,6 +403,7 @@ class Simulator:
                     "text": narration.prune_text(
                         count, weight, self.discarded, self.config.options.prune_eps
                     ),
+                    "text_plain": narration.prune_plain(weight, self.discarded),
                 }
             )
         self._pruned_count = 0
@@ -422,7 +463,13 @@ class Simulator:
                 if self.active and self.rules.trees > 1:
                     state = self._empty_aux_rail(t, state, events)
                 state = state.with_directions(-1)
-                events.append({"kind": "turn", "text": narration.turn_text(self.variant)})
+                events.append(
+                    {
+                        "kind": "turn",
+                        "text": narration.turn_text(self.variant),
+                        "text_plain": narration.turn_plain(self.variant),
+                    }
+                )
             if self.coherent:
                 self._prune_event(events)
             if t == sched.T_total - 1:
@@ -517,6 +564,7 @@ class Simulator:
         new_state.next_bid = max(new_state.next_bid, next(alloc))
         if overrotate and split[0]:
             self.counters.noise_events["overrotation"] += 1
+            self.disturbed = True
             events.append(
                 {
                     "kind": "noise",
@@ -524,6 +572,7 @@ class Simulator:
                     "gate": gate.id,
                     "new_branches": split[0],
                     "text": narration.overrotation_text(gate, split[0]),
+                    "text_plain": narration.overrotation_plain(gate, split[0]),
                 }
             )
         new_state = self._prune(new_state)
@@ -532,6 +581,11 @@ class Simulator:
             self.counters.activations[phase][str(gate.kind)] += 1
             self.counters.activations_expected[phase][str(gate.kind)] += expected
         fired_in.sort()
+        failed = sorted(l for l, f in ctx.failed.items() if f)
+        flipped = sorted(l for l, f in ctx.flipped.items() if f)
+        if failed or flipped or ctx.strays:
+            self.disturbed = True  # before the gate's own plain sentence
+        frozen = sum(1 for br in state if br.collided) if self.disturbed else 0
         events.append(
             {
                 "kind": "gate",
@@ -545,9 +599,22 @@ class Simulator:
                 "text": narration.gate_text(
                     gate, self.variant, fired_in, len(state), self.branch_names, changes
                 ),
+                "text_plain": narration.gate_plain(
+                    gate,
+                    self.variant,
+                    fired_in,
+                    len(state),
+                    self.branch_names,
+                    changes,
+                    reads=ctx.reads,
+                    lanes=sorted(edges),
+                    controls=sorted(ctx.controls),
+                    ideal=not self.disturbed,
+                    frozen=frozen,
+                    failed=len(failed),
+                ),
             }
         )
-        failed = sorted(l for l, f in ctx.failed.items() if f)
         if failed:
             self.counters.noise_events["gate_failure"] += 1
             events.append(
@@ -557,9 +624,9 @@ class Simulator:
                     "gate": gate.id,
                     "edges": [[gate.level, l] for l in failed],
                     "text": narration.gate_failure_text(gate, failed),
+                    "text_plain": narration.gate_failure_plain(gate, self.variant, failed),
                 }
             )
-        flipped = sorted(l for l, f in ctx.flipped.items() if f)
         if flipped:
             self.counters.noise_events["copy_error"] += 1
             events.append(
@@ -569,6 +636,7 @@ class Simulator:
                     "gate": gate.id,
                     "edges": [[gate.level, l] for l in flipped],
                     "text": narration.copy_error_text(gate, self.variant, flipped),
+                    "text_plain": narration.copy_error_plain(gate, self.variant, flipped),
                 }
             )
         events.extend(ctx.strays)
@@ -657,6 +725,8 @@ class Simulator:
                 continue
             if self._channels("gate_failure") and self._gate_failed(ctx, l):
                 continue
+            if who is not None:
+                ctx.controls.add(self.variant.slots[who].label if who >= 0 else "stray")
             if kind in (GateKind.CELL_ON, GateKind.CELL_OFF):
                 fired.append(l)
                 cells.symmetric_difference_update({l})
@@ -670,6 +740,12 @@ class Simulator:
                     if copy_noise and self._copy_flipped(ctx, l):
                         bit = 1 - bit
                 table = rules.target_table(kind, control, bit)
+                if bit is not None and kind in COPY_GATES:
+                    ctx.reads.append(
+                        self._copy_read(
+                            br, gate, l, idx, bit, phys.get((tree, l, site)), slots, strays, table
+                        )
+                    )
                 if kind in LANE_GATES:
                     for (_, l2, s2), k in list(phys.items()):
                         if l2 == l and s2 == site and k >= 0:
@@ -739,6 +815,12 @@ class Simulator:
                                 (level, l, site),
                                 self.branch_names.get(br.bid, str(br.bid)),
                             ),
+                            "text_plain": narration.stray_plain(
+                                gate,
+                                self.variant,
+                                k_bin,
+                                self.branch_names.get(br.bid, str(br.bid)),
+                            ),
                         }
                     )
             if kind in LANE_GATES:
@@ -787,6 +869,7 @@ class Simulator:
                 state, jump = apply_channel(state, ch, k, mask, self.rng)
                 if jump is not None:
                     self.counters.noise_events[ch.model] += 1
+                    self.disturbed = True
                     events.append(
                         {
                             "kind": "noise",
@@ -797,6 +880,15 @@ class Simulator:
                             "branches": list(jump.branches),
                             "p": jump.probability,
                             "text": narration.noise_text(
+                                ch,
+                                jump.op,
+                                self.variant.slots[k],
+                                location,
+                                jump.branches,
+                                len(state),
+                                self.branch_names,
+                            ),
+                            "text_plain": narration.noise_plain(
                                 ch,
                                 jump.op,
                                 self.variant.slots[k],
@@ -919,6 +1011,9 @@ class Simulator:
                     "k": k,
                     "branches": bids,
                     "text": narration.aux_left_text(self.variant.slots[k], len(bids), n_br),
+                    "text_plain": narration.aux_left_plain(
+                        self.variant.slots[k], bids, n_br, self.branch_names
+                    ),
                 }
             )
         return new_state
@@ -967,6 +1062,9 @@ class Simulator:
                     "pos": h["pos"],
                     "text": narration.collision_text(
                         h["who"], tuple(h["pos"]), self.branch_names.get(h["b"], str(h["b"]))
+                    ),
+                    "text_plain": narration.collision_plain(
+                        h["who"], self.branch_names.get(h["b"], str(h["b"]))
                     ),
                 }
             )
@@ -1120,12 +1218,14 @@ class Simulator:
         new_state.next_bid = max(new_state.next_bid, next(alloc))
         if split[0]:
             self.counters.noise_events["beam_splitter_imbalance"] += 1
+            self.disturbed = True
             events.append(
                 {
                     "kind": "noise",
                     "model": "beam_splitter_imbalance",
                     "new_branches": split[0],
                     "text": narration.imbalance_text(split[0]),
+                    "text_plain": narration.imbalance_plain(split[0]),
                 }
             )
         new_state = self._prune(new_state)
@@ -1144,6 +1244,9 @@ class Simulator:
                         "k": k,
                         "branches": [r["b"] for r in recs],
                         "text": narration.inject_text(slot, len(recs), n_br),
+                        "text_plain": narration.inject_plain(
+                            slot, [r["b"] for r in recs], n_br, self.branch_names
+                        ),
                     }
                 )
             elif what == _EXIT:
@@ -1153,6 +1256,9 @@ class Simulator:
                         "k": k,
                         "branches": [r["b"] for r in recs],
                         "text": narration.exit_text(slot, len(recs), n_br),
+                        "text_plain": narration.exit_plain(
+                            slot, [r["b"] for r in recs], n_br, self.branch_names
+                        ),
                     }
                 )
             elif what == _ABSORB:
@@ -1162,6 +1268,9 @@ class Simulator:
                         "k": k,
                         "branches": [r["b"] for r in recs],
                         "text": narration.absorb_text(slot, len(recs), n_br),
+                        "text_plain": narration.absorb_plain(
+                            slot, [r["b"] for r in recs], n_br, self.branch_names
+                        ),
                     }
                 )
             else:
@@ -1173,6 +1282,9 @@ class Simulator:
                         "dir": direction,
                         "crossings": recs,
                         "text": narration.scatter_text(
+                            slot, direction, recs, n_br, self.branch_names
+                        ),
+                        "text_plain": narration.scatter_plain(
                             slot, direction, recs, n_br, self.branch_names
                         ),
                     }
@@ -1187,6 +1299,7 @@ class Simulator:
             "model": "memory_bit_flip",
             "flips": self.memory_flips,
             "text": narration.memory_flip_text(self.memory_flips),
+            "text_plain": narration.memory_flip_plain(self.memory_flips),
         }
 
     def _phase_event(self, phase: Phase | None) -> Event:
@@ -1195,6 +1308,7 @@ class Simulator:
             "kind": "phase",
             "phase": name,
             "text": narration.phase_text(name, self.variant, self.schedule),
+            "text_plain": narration.phase_plain(name, self.variant, ideal=not self.disturbed),
         }
 
     # -- strict-mode invariants (PROTOCOL.md §8.2) ------------------------------------

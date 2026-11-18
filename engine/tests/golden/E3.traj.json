@@ -637,7 +637,8 @@
     {
      "kind": "phase",
      "phase": "routing",
-     "text": "Routing begins (ticks 0–14). The train of K = 7 slots (A₁ at the front, D₂ at the tail) enters the input port one site per tick. On every 4-site edge of level d, Û_in copies the colour of A_d onto its backup Ã_d; then Û_B, activated by a blue backup, flips the next walker and its backup, passing the bit two walkers at a time down the train. Gates of consecutive levels fire in the same ticks (pipelining). At each bifurcation Ŝ sends red walkers left (bit 0) and blue walkers right (bit 1), resetting them to red."
+     "text": "Routing begins (ticks 0–14). The train of K = 7 slots (A₁ at the front, D₂ at the tail) enters the input port one site per tick. On every 4-site edge of level d, Û_in copies the colour of A_d onto its backup Ã_d; then Û_B, activated by a blue backup, flips the next walker and its backup, passing the bit two walkers at a time down the train. Gates of consecutive levels fire in the same ticks (pipelining). At each bifurcation Ŝ sends red walkers left (bit 0) and blue walkers right (bit 1), resetting them to red.",
+     "text_plain": "Routing begins: the train enters the tree one step per clock cycle. Each address bit is copied onto a backup walker and passed down the train two walkers at a time, steering the data walkers to the memory cell of the address."
     },
     {
      "kind": "inject",
@@ -645,7 +646,8 @@
      "branches": [
       0
      ],
-     "text": "A₁ enters the tree at the input port (edge (1,1), site 1)."
+     "text": "A₁ enters the tree at the input port (edge (1,1), site 1).",
+     "text_plain": "A₁ enters the tree."
     }
    ]
   },
@@ -746,7 +748,8 @@
      "branches": [
       0
      ],
-     "text": "Ã₁ enters the tree at the input port (edge (1,1), site 1)."
+     "text": "Ã₁ enters the tree at the input port (edge (1,1), site 1).",
+     "text_plain": "Ã₁ enters the tree."
     }
    ]
   },
@@ -956,7 +959,8 @@
        "to": "B"
       }
      ],
-     "text": "Û_in⁽¹⁾ on edge (1,1): A₁ is red → X̂ flips Ã₁."
+     "text": "Û_in⁽¹⁾ on edge (1,1): A₁ is red → X̂ flips Ã₁.",
+     "text_plain": "Û_in⁽¹⁾ copies A₁ onto its backup: A₁ is red (address bit 1), so Ã₁ turns blue and will take the right branch."
     },
     {
      "kind": "inject",
@@ -964,7 +968,8 @@
      "branches": [
       0
      ],
-     "text": "Ã₂ enters the tree at the input port (edge (1,1), site 1)."
+     "text": "Ã₂ enters the tree at the input port (edge (1,1), site 1).",
+     "text_plain": "Ã₂ enters the tree."
     }
    ]
   },
@@ -1082,7 +1087,8 @@
        ]
       }
      ],
-     "text": "Ŝ: A₁ red at node (1,1) → left into (2,1), stays red."
+     "text": "Ŝ: A₁ red at node (1,1) → left into (2,1), stays red.",
+     "text_plain": "Ŝ sends A₁, red, into the left branch (bit 0)."
     },
     {
      "kind": "inject",
@@ -1090,7 +1096,8 @@
      "branches": [
       0
      ],
-     "text": "D₁ enters the tree at the input port (edge (1,1), site 1)."
+     "text": "D₁ enters the tree at the input port (edge (1,1), site 1).",
+     "text_plain": "D₁ enters the tree."
     }
    ]
   },
@@ -1215,7 +1222,8 @@
        "to": "B"
       }
      ],
-     "text": "Û_B⁽¹⁾ [Ã₁] on edge (1,1): Ã₁ is blue → X̂ flips Ã₂."
+     "text": "Û_B⁽¹⁾ [Ã₁] on edge (1,1): Ã₁ is blue → X̂ flips Ã₂.",
+     "text_plain": "Û_B⁽¹⁾ [Ã₁] passes the bit down the train: Ã₁ is blue, so Ã₂ turns blue and will take the right branch."
     },
     {
      "kind": "scatter",
@@ -1240,7 +1248,8 @@
        ]
       }
      ],
-     "text": "Ŝ: Ã₁ blue at node (1,1) → right into (2,2), reset to red."
+     "text": "Ŝ: Ã₁ blue at node (1,1) → right into (2,2), reset to red.",
+     "text_plain": "Ŝ sends Ã₁, blue, into the right branch (bit 1) and turns it red again."
     },
     {
      "kind": "inject",
@@ -1248,7 +1257,8 @@
      "branches": [
       0
      ],
-     "text": "D̃₁ enters the tree at the input port (edge (1,1), site 1)."
+     "text": "D̃₁ enters the tree at the input port (edge (1,1), site 1).",
+     "text_plain": "D̃₁ enters the tree."
     }
    ]
   },
@@ -1349,7 +1359,8 @@
      "branches": [
       0
      ],
-     "text": "D₂ enters the tree at the input port (edge (1,1), site 1)."
+     "text": "D₂ enters the tree at the input port (edge (1,1), site 1).",
+     "text_plain": "D₂ enters the tree."
     }
    ]
   },
@@ -1473,7 +1484,8 @@
        "to": "B"
       }
      ],
-     "text": "Û_B⁽¹⁾ [Ã₂] on edge (1,1): Ã₂ is blue → X̂ flips D₁, D̃₁."
+     "text": "Û_B⁽¹⁾ [Ã₂] on edge (1,1): Ã₂ is blue → X̂ flips D₁, D̃₁.",
+     "text_plain": "Û_B⁽¹⁾ [Ã₂] passes the bit down the train: Ã₂ is blue, so D₁ and D̃₁ turn blue and will take the right branch."
     },
     {
      "kind": "scatter",
@@ -1498,7 +1510,8 @@
        ]
       }
      ],
-     "text": "Ŝ: Ã₂ blue at node (1,1) → right into (2,2), reset to red."
+     "text": "Ŝ: Ã₂ blue at node (1,1) → right into (2,2), reset to red.",
+     "text_plain": "Ŝ sends Ã₂, blue, into the right branch (bit 1) and turns it red again."
     }
    ]
   },
@@ -1616,7 +1629,8 @@
        ]
       }
      ],
-     "text": "Ŝ: A₁ red at node (2,1) → left into (3,1), stays red."
+     "text": "Ŝ: A₁ red at node (2,1) → left into (3,1), stays red.",
+     "text_plain": "Ŝ sends A₁, red, into the left branch (bit 0)."
     },
     {
      "kind": "scatter",
@@ -1641,7 +1655,8 @@
        ]
       }
      ],
-     "text": "Ŝ: D₁ blue at node (1,1) → right into (2,2), reset to red."
+     "text": "Ŝ: D₁ blue at node (1,1) → right into (2,2), reset to red.",
+     "text_plain": "Ŝ sends D₁, blue, into the right branch (bit 1) and turns it red again."
     }
    ]
   },
@@ -1759,7 +1774,8 @@
        "to": "B"
       }
      ],
-     "text": "Û_B⁽¹⁾ [D̃₁] on edge (1,1): D̃₁ is blue → X̂ flips D₂."
+     "text": "Û_B⁽¹⁾ [D̃₁] on edge (1,1): D̃₁ is blue → X̂ flips D₂.",
+     "text_plain": "Û_B⁽¹⁾ [D̃₁] passes the bit down the train: D̃₁ is blue, so D₂ turns blue and will take the right branch."
     },
     {
      "kind": "gate",
@@ -1770,7 +1786,8 @@
      "edges": [],
      "fired_in": [],
      "changes": [],
-     "text": "Û_in⁽²⁾ on the 2 edges of level 2: the control A₂ is absent (∅) everywhere → identity."
+     "text": "Û_in⁽²⁾ on the 2 edges of level 2: the control A₂ is absent (∅) everywhere → identity.",
+     "text_plain": "Û_in⁽²⁾ does nothing: A₂ is absent (address bit 0), so its backup keeps its colour."
     },
     {
      "kind": "scatter",
@@ -1795,7 +1812,8 @@
        ]
       }
      ],
-     "text": "Ŝ: Ã₁ red at node (2,2) → left into (3,3), stays red."
+     "text": "Ŝ: Ã₁ red at node (2,2) → left into (3,3), stays red.",
+     "text_plain": "Ŝ sends Ã₁, red, into the left branch (bit 0)."
     },
     {
      "kind": "scatter",
@@ -1820,7 +1838,8 @@
        ]
       }
      ],
-     "text": "Ŝ: D̃₁ blue at node (1,1) → right into (2,2), reset to red."
+     "text": "Ŝ: D̃₁ blue at node (1,1) → right into (2,2), reset to red.",
+     "text_plain": "Ŝ sends D̃₁, blue, into the right branch (bit 1) and turns it red again."
     }
    ]
   },
@@ -1938,7 +1957,8 @@
        ]
       }
      ],
-     "text": "Ŝ: D₂ blue at node (1,1) → right into (2,2), reset to red."
+     "text": "Ŝ: D₂ blue at node (1,1) → right into (2,2), reset to red.",
+     "text_plain": "Ŝ sends D₂, blue, into the right branch (bit 1) and turns it red again."
     }
    ]
   },
@@ -2042,7 +2062,8 @@
      "edges": [],
      "fired_in": [],
      "changes": [],
-     "text": "Û_B⁽²⁾ [Ã₂] on the 2 edges of level 2: the control Ã₂ is red or absent everywhere → identity."
+     "text": "Û_B⁽²⁾ [Ã₂] on the 2 edges of level 2: the control Ã₂ is red or absent everywhere → identity.",
+     "text_plain": "Û_B⁽²⁾ [Ã₂] does nothing: Ã₂ is not blue, so no bit is passed on."
     },
     {
      "kind": "scatter",
@@ -2067,7 +2088,8 @@
        ]
       }
      ],
-     "text": "Ŝ: Ã₂ red at node (2,2) → left into (3,3), stays red."
+     "text": "Ŝ: Ã₂ red at node (2,2) → left into (3,3), stays red.",
+     "text_plain": "Ŝ sends Ã₂, red, into the left branch (bit 0)."
     }
    ]
   },
@@ -2185,7 +2207,8 @@
        ]
       }
      ],
-     "text": "Ŝ: D₁ red at node (2,2) → left into (3,3), stays red."
+     "text": "Ŝ: D₁ red at node (2,2) → left into (3,3), stays red.",
+     "text_plain": "Ŝ sends D₁, red, into the left branch (bit 0)."
     }
    ]
   },
@@ -2289,7 +2312,8 @@
      "edges": [],
      "fired_in": [],
      "changes": [],
-     "text": "Û_B⁽²⁾ [D̃₁] on the 2 edges of level 2: the control D̃₁ is red or absent everywhere → identity."
+     "text": "Û_B⁽²⁾ [D̃₁] on the 2 edges of level 2: the control D̃₁ is red or absent everywhere → identity.",
+     "text_plain": "Û_B⁽²⁾ [D̃₁] does nothing: D̃₁ is not blue, so no bit is passed on."
     },
     {
      "kind": "scatter",
@@ -2314,7 +2338,8 @@
        ]
       }
      ],
-     "text": "Ŝ: D̃₁ red at node (2,2) → left into (3,3), stays red."
+     "text": "Ŝ: D̃₁ red at node (2,2) → left into (3,3), stays red.",
+     "text_plain": "Ŝ sends D̃₁, red, into the left branch (bit 0)."
     }
    ]
   },
@@ -2432,7 +2457,8 @@
        ]
       }
      ],
-     "text": "Ŝ: D₂ red at node (2,2) → left into (3,3), stays red."
+     "text": "Ŝ: D₂ red at node (2,2) → left into (3,3), stays red.",
+     "text_plain": "Ŝ sends D₂, red, into the left branch (bit 0)."
     }
    ]
   },
@@ -2530,7 +2556,8 @@
     {
      "kind": "phase",
      "phase": "query",
-     "text": "Query (ticks 15–16). Every walker rests in a memory lane (each slot on its own lane site). Each data walker D_j is copied under the control of the backup in front of it (Ã_n for D₁, D̃_{j−1} for D_j): the backups are present and red only in the lane(s) the train reached. The local copy Û_copy^loc(D_j|M_j) erases the data walker D_j (R → ∅) where the stored bit b_j = 0 and leaves it red where b_j = 1."
+     "text": "Query (ticks 15–16). Every walker rests in a memory lane (each slot on its own lane site). Each data walker D_j is copied under the control of the backup in front of it (Ã_n for D₁, D̃_{j−1} for D_j): the backups are present and red only in the lane(s) the train reached. The local copy Û_copy^loc(D_j|M_j) erases the data walker D_j (R → ∅) where the stored bit b_j = 0 and leaves it red where b_j = 1.",
+     "text_plain": "Query: the walkers rest in the memory cells. Each data walker's copy is controlled by the backup ahead of it, which is red only where the train arrived: a stored 1 leaves it red, a 0 removes it."
     },
     {
      "kind": "gate",
@@ -2548,7 +2575,8 @@
       0
      ],
      "changes": [],
-     "text": "Û_copy [D₁ | Ã₂] acts in the lane(s) where Ã₂ is red: the local copy leaves the data walkers red (stored bits = 1)."
+     "text": "Û_copy [D₁ | Ã₂] acts in the lane(s) where Ã₂ is red: the local copy leaves the data walkers red (stored bits = 1).",
+     "text_plain": "Controlled by Ã₂, the copy reads cell 10: its bit is 1, so D₁ stays red."
     }
    ]
   },
@@ -2669,11 +2697,13 @@
        "to": "E"
       }
      ],
-     "text": "Û_copy [D₂ | D̃₁] acts in the lane(s) where D̃₁ is red: the local copy erases D₂ in 1 branch(es)."
+     "text": "Û_copy [D₂ | D̃₁] acts in the lane(s) where D̃₁ is red: the local copy erases D₂ in 1 branch(es).",
+     "text_plain": "Controlled by D̃₁, the copy reads cell 10: its bit is 0, so D₂ is removed."
     },
     {
      "kind": "turn",
-     "text": "End of the query: every walker reverses its direction; the inverse routing replays the forward schedule backwards in time."
+     "text": "End of the query: every walker reverses its direction; the inverse routing replays the forward schedule backwards in time.",
+     "text_plain": "End of the query: every walker turns around, and the routing is replayed backwards in time."
     }
    ]
   },
@@ -2774,7 +2804,8 @@
     {
      "kind": "phase",
      "phase": "inverse",
-     "text": "Inverse routing (ticks 17–31): the exact time reversal of routing. The train retraces its path tail-first; Ŝ† merges the paths at every bifurcation (a red walker arriving from the right child turns blue) and the same gates fire again in reverse order, recollecting the dispersed address walkers. All 2 levels are undone and the walkers leave through the port they entered."
+     "text": "Inverse routing (ticks 17–31): the exact time reversal of routing. The train retraces its path tail-first; Ŝ† merges the paths at every bifurcation (a red walker arriving from the right child turns blue) and the same gates fire again in reverse order, recollecting the dispersed address walkers. All 2 levels are undone and the walkers leave through the port they entered.",
+     "text_plain": "Inverse routing: the routing now runs backwards in time. The paths merge back at every bifurcation, the same gates fire again in reverse order, and the walkers head back out of the tree the way they came in."
     }
    ]
   },
@@ -2895,7 +2926,8 @@
        ]
       }
      ],
-     "text": "Ŝ†: D̃₁ arrives red from the left child (3,3) → up into (2,2), stays red."
+     "text": "Ŝ†: D̃₁ arrives red from the left child (3,3) → up into (2,2), stays red.",
+     "text_plain": "On the way back Ŝ† merges D̃₁, arriving red from the left branch (bit 0), back toward the root; it stays red."
     },
     {
      "kind": "gate",
@@ -2906,7 +2938,8 @@
      "edges": [],
      "fired_in": [],
      "changes": [],
-     "text": "Û_B⁽²⁾ [D̃₁] (inverse routing; self-adjoint) on the 2 edges of level 2: the control D̃₁ is red or absent everywhere → identity."
+     "text": "Û_B⁽²⁾ [D̃₁] (inverse routing; self-adjoint) on the 2 edges of level 2: the control D̃₁ is red or absent everywhere → identity.",
+     "text_plain": "On the way back Û_B⁽²⁾ [D̃₁] again does nothing: D̃₁ is not blue, so no bit is passed on."
     }
    ]
   },
@@ -3027,7 +3060,8 @@
        ]
       }
      ],
-     "text": "Ŝ†: D₁ arrives red from the left child (3,3) → up into (2,2), stays red."
+     "text": "Ŝ†: D₁ arrives red from the left child (3,3) → up into (2,2), stays red.",
+     "text_plain": "On the way back Ŝ† merges D₁, arriving red from the left branch (bit 0), back toward the root; it stays red."
     }
    ]
   },
@@ -3148,7 +3182,8 @@
        ]
       }
      ],
-     "text": "Ŝ†: Ã₂ arrives red from the left child (3,3) → up into (2,2), stays red."
+     "text": "Ŝ†: Ã₂ arrives red from the left child (3,3) → up into (2,2), stays red.",
+     "text_plain": "On the way back Ŝ† merges Ã₂, arriving red from the left branch (bit 0), back toward the root; it stays red."
     },
     {
      "kind": "gate",
@@ -3159,7 +3194,8 @@
      "edges": [],
      "fired_in": [],
      "changes": [],
-     "text": "Û_B⁽²⁾ [Ã₂] (inverse routing; self-adjoint) on the 2 edges of level 2: the control Ã₂ is red or absent everywhere → identity."
+     "text": "Û_B⁽²⁾ [Ã₂] (inverse routing; self-adjoint) on the 2 edges of level 2: the control Ã₂ is red or absent everywhere → identity.",
+     "text_plain": "On the way back Û_B⁽²⁾ [Ã₂] again does nothing: Ã₂ is not blue, so no bit is passed on."
     }
    ]
   },
@@ -3375,7 +3411,8 @@
        ]
       }
      ],
-     "text": "Ŝ†: Ã₁ arrives red from the left child (3,3) → up into (2,2), stays red."
+     "text": "Ŝ†: Ã₁ arrives red from the left child (3,3) → up into (2,2), stays red.",
+     "text_plain": "On the way back Ŝ† merges Ã₁, arriving red from the left branch (bit 0), back toward the root; it stays red."
     },
     {
      "kind": "scatter",
@@ -3400,7 +3437,8 @@
        ]
       }
      ],
-     "text": "Ŝ†: D̃₁ arrives red from the right child (2,2) → up into (1,1), turns blue."
+     "text": "Ŝ†: D̃₁ arrives red from the right child (2,2) → up into (1,1), turns blue.",
+     "text_plain": "On the way back Ŝ† merges D̃₁, arriving red from the right branch (bit 1), back toward the root, turning it blue: the routing is being undone."
     },
     {
      "kind": "gate",
@@ -3426,7 +3464,8 @@
        "ghost": true
       }
      ],
-     "text": "Û_B⁽¹⁾ [D̃₁] (inverse routing; self-adjoint) on edge (1,1): D̃₁ is blue → its targets are empty."
+     "text": "Û_B⁽¹⁾ [D̃₁] (inverse routing; self-adjoint) on edge (1,1): D̃₁ is blue → its targets are empty.",
+     "text_plain": "On the way back Û_B⁽¹⁾ [D̃₁] acts again: D̃₁ is blue, but it finds no walker to recolour."
     },
     {
      "kind": "gate",
@@ -3437,7 +3476,8 @@
      "edges": [],
      "fired_in": [],
      "changes": [],
-     "text": "Û_in⁽²⁾ (inverse routing; self-adjoint) on the 2 edges of level 2: the control A₂ is absent (∅) everywhere → identity."
+     "text": "Û_in⁽²⁾ (inverse routing; self-adjoint) on the 2 edges of level 2: the control A₂ is absent (∅) everywhere → identity.",
+     "text_plain": "On the way back Û_in⁽²⁾ again does nothing: A₂ is absent (address bit 0), so its backup keeps its colour."
     }
    ]
   },
@@ -3558,7 +3598,8 @@
        ]
       }
      ],
-     "text": "Ŝ†: A₁ arrives red from the left child (3,1) → up into (2,1), stays red."
+     "text": "Ŝ†: A₁ arrives red from the left child (3,1) → up into (2,1), stays red.",
+     "text_plain": "On the way back Ŝ† merges A₁, arriving red from the left branch (bit 0), back toward the root; it stays red."
     },
     {
      "kind": "scatter",
@@ -3583,7 +3624,8 @@
        ]
       }
      ],
-     "text": "Ŝ†: D₁ arrives red from the right child (2,2) → up into (1,1), turns blue."
+     "text": "Ŝ†: D₁ arrives red from the right child (2,2) → up into (1,1), turns blue.",
+     "text_plain": "On the way back Ŝ† merges D₁, arriving red from the right branch (bit 1), back toward the root, turning it blue: the routing is being undone."
     }
    ]
   },
@@ -3704,7 +3746,8 @@
        ]
       }
      ],
-     "text": "Ŝ†: Ã₂ arrives red from the right child (2,2) → up into (1,1), turns blue."
+     "text": "Ŝ†: Ã₂ arrives red from the right child (2,2) → up into (1,1), turns blue.",
+     "text_plain": "On the way back Ŝ† merges Ã₂, arriving red from the right branch (bit 1), back toward the root, turning it blue: the routing is being undone."
     },
     {
      "kind": "gate",
@@ -3735,7 +3778,8 @@
        "to": "R"
       }
      ],
-     "text": "Û_B⁽¹⁾ [Ã₂] (inverse routing; self-adjoint) on edge (1,1): Ã₂ is blue → X̂ flips D₁, D̃₁."
+     "text": "Û_B⁽¹⁾ [Ã₂] (inverse routing; self-adjoint) on edge (1,1): Ã₂ is blue → X̂ flips D₁, D̃₁.",
+     "text_plain": "On the way back Û_B⁽¹⁾ [Ã₂] acts again: Ã₂ is blue, so D₁ and D̃₁ turn red again."
     }
    ]
   },
@@ -3951,7 +3995,8 @@
        ]
       }
      ],
-     "text": "Ŝ†: Ã₁ arrives red from the right child (2,2) → up into (1,1), turns blue."
+     "text": "Ŝ†: Ã₁ arrives red from the right child (2,2) → up into (1,1), turns blue.",
+     "text_plain": "On the way back Ŝ† merges Ã₁, arriving red from the right branch (bit 1), back toward the root, turning it blue: the routing is being undone."
     },
     {
      "kind": "exit",
@@ -3959,7 +4004,8 @@
      "branches": [
       0
      ],
-     "text": "D̃₁ leaves the tree through the port."
+     "text": "D̃₁ leaves the tree through the port.",
+     "text_plain": "D̃₁ leaves the tree."
     },
     {
      "kind": "gate",
@@ -3991,7 +4037,8 @@
        "to": "R"
       }
      ],
-     "text": "Û_B⁽¹⁾ [Ã₁] (inverse routing; self-adjoint) on edge (1,1): Ã₁ is blue → X̂ flips Ã₂."
+     "text": "Û_B⁽¹⁾ [Ã₁] (inverse routing; self-adjoint) on edge (1,1): Ã₁ is blue → X̂ flips Ã₂.",
+     "text_plain": "On the way back Û_B⁽¹⁾ [Ã₁] acts again: Ã₁ is blue, so Ã₂ turns red again."
     }
    ]
   },
@@ -4112,7 +4159,8 @@
        ]
       }
      ],
-     "text": "Ŝ†: A₁ arrives red from the left child (2,1) → up into (1,1), stays red."
+     "text": "Ŝ†: A₁ arrives red from the left child (2,1) → up into (1,1), stays red.",
+     "text_plain": "On the way back Ŝ† merges A₁, arriving red from the left branch (bit 0), back toward the root; it stays red."
     },
     {
      "kind": "exit",
@@ -4120,7 +4168,8 @@
      "branches": [
       0
      ],
-     "text": "D₁ leaves the tree through the port."
+     "text": "D₁ leaves the tree through the port.",
+     "text_plain": "D₁ leaves the tree."
     }
    ]
   },
@@ -4224,7 +4273,8 @@
      "branches": [
       0
      ],
-     "text": "Ã₂ leaves the tree through the port."
+     "text": "Ã₂ leaves the tree through the port.",
+     "text_plain": "Ã₂ leaves the tree."
     },
     {
      "kind": "gate",
@@ -4249,7 +4299,8 @@
        "to": "R"
       }
      ],
-     "text": "Û_in⁽¹⁾ (inverse routing; self-adjoint) on edge (1,1): A₁ is red → X̂ flips Ã₁."
+     "text": "Û_in⁽¹⁾ (inverse routing; self-adjoint) on edge (1,1): A₁ is red → X̂ flips Ã₁.",
+     "text_plain": "On the way back Û_in⁽¹⁾ acts again: A₁ is red (address bit 1), so Ã₁ turns red again."
     }
    ]
   },
@@ -4448,7 +4499,8 @@
      "branches": [
       0
      ],
-     "text": "Ã₁ leaves the tree through the port."
+     "text": "Ã₁ leaves the tree through the port.",
+     "text_plain": "Ã₁ leaves the tree."
     }
    ]
   },
@@ -4552,12 +4604,14 @@
      "branches": [
       0
      ],
-     "text": "A₁ leaves the tree through the port."
+     "text": "A₁ leaves the tree through the port.",
+     "text_plain": "A₁ leaves the tree."
     },
     {
      "kind": "phase",
      "phase": "done",
-     "text": "Done: every walker has left the tree through the port; the output state is read."
+     "text": "Done: every walker has left the tree through the port; the output state is read.",
+     "text_plain": "Done: every walker is back out of the tree, carrying the address and the bit it read."
     }
    ]
   }

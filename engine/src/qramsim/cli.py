@@ -200,9 +200,10 @@ def cmd_export(args: argparse.Namespace) -> int:
                 "k": e.get("k", ""),
                 "fired_in": " ".join(str(b) for b in e.get("fired_in", [])),
                 "text": e.get("text", ""),
+                "text_plain": e.get("text_plain", ""),
             }
         )
-    fields = ["t", "kind", "gate", "phase", "k", "fired_in", "text"]
+    fields = ["t", "kind", "gate", "phase", "k", "fired_in", "text", "text_plain"]
     handle = out.open("w", newline="", encoding="utf-8") if out else sys.stdout
     try:
         writer = csv.DictWriter(handle, fieldnames=fields)

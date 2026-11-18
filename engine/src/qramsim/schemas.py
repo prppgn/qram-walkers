@@ -144,7 +144,13 @@ TRAJ_JSON_SCHEMA: dict[str, Any] = {
                         "type": "array",
                         "items": {
                             "type": "object",
-                            "properties": {"kind": {"type": "string"}, "text": {"type": "string"}},
+                            "properties": {
+                                "kind": {"type": "string"},
+                                "text": {"type": "string"},
+                                # plain-language sentence; optional so that trajectories
+                                # written before it existed still validate
+                                "text_plain": {"type": "string"},
+                            },
                             "required": ["kind", "text"],
                         },
                     },
