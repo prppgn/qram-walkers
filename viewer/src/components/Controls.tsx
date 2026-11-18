@@ -70,7 +70,75 @@ export function Timeline() {
   );
 }
 
-export function Controls() {
+function GuidedToggle() {
+  const guided = usePlayback((s) => s.guided);
+  const setGuided = usePlayback((s) => s.setGuided);
+  return (
+    <label className="field" title="While playing, stop at the key moments of the run (the end of each level, the query, the return, the end) with a note under the tree; space or a click continues">
+      <input type="checkbox" checked={guided} data-testid="guided" onChange={(e) => setGuided(e.target.checked)} />
+      Pause at key moments
+    </label>
+  );
+}
+
+function SpeedControl() {
+  const speed = usePlayback((s) => s.speed);
+  const setSpeed = usePlayback((s) => s.setSpeed);
+  return (
+    <label className="field" title="Playback speed in clock ticks per second">
+      speed
+      <input type="range" min={-2} max={4} step={0.5} value={Math.log2(speed)} data-testid="speed" onChange={(e) => setSpeed(2 ** Number(e.target.value))} />
+      <span className="mono">{speed < 1 ? speed.toFixed(2) : speed.toFixed(1)}/s</span>
+    </label>
+  );
+}
+
+/** Simple mode: play, a gate back and forward, speed, guided pauses, the timeline. */
+function SimpleControls() {
+  const s = usePlayback();
+  const traj = s.traj;
+  const disabled = !traj;
+  const cur = traj?.frames[s.frame];
+  return (
+    <div className="controls simple" data-testid="controls">
+      <div className="controls-row">
+        <button className="btn icon" disabled={disabled} title="Step back one gate (←)" aria-label="Step back" data-testid="step-back" onClick={() => s.step(-1)}>
+          ◀
+        </button>
+        <button
+          className="btn icon primary play-big"
+          disabled={disabled}
+          title="Play / pause (space)"
+          aria-label={s.playing ? "Pause" : "Play"}
+          data-testid="play"
+          onClick={s.togglePlay}
+        >
+          {s.playing ? "⏸" : "▶"}
+        </button>
+        <button className="btn icon" disabled={disabled} title="Step forward one gate (→)" aria-label="Step forward" data-testid="step-forward" onClick={() => s.step(1)}>
+          ▶︎|
+        </button>
+        <span className="sep" />
+        <SpeedControl />
+        <span className="sep" />
+        <GuidedToggle />
+        <span className="spacer" />
+        <span className="mono frame-counter" data-testid="frame-counter" title="Tick of the current frame (frame 0 is the input state)">
+          {cur ? `${cur.t < 0 ? "input" : `tick ${cur.t}`} / ${traj!.meta.phases.T_total - 1} · ${PHASE_NAMES[cur.phase]}` : "—"}
+        </span>
+        <InfoButton anchor="ui-playback" topic="playback controls" />
+      </div>
+      <Timeline />
+    </div>
+  );
+}
+
+export function Controls({ simple = false }: { simple?: boolean }) {
+  if (simple) return <SimpleControls />;
+  return <AdvancedControls />;
+}
+
+function AdvancedControls() {
   const s = usePlayback();
   const traj = s.traj;
   const disabled = !traj;
@@ -139,18 +207,8 @@ export function Controls() {
           </label>
         )}
         <span className="sep" />
-        <label className="field" title="Playback speed in clock ticks per second">
-          speed
-          <input
-            type="range"
-            min={-2}
-            max={4}
-            step={0.5}
-            value={Math.log2(s.speed)}
-            onChange={(e) => s.setSpeed(2 ** Number(e.target.value))}
-          />
-          <span className="mono">{s.speed < 1 ? s.speed.toFixed(2) : s.speed.toFixed(1)}/s</span>
-        </label>
+        <SpeedControl />
+        <GuidedToggle />
         <span className="sep" />
         {["routing", "query", "inverse"].map((p) => (
           <button

@@ -1,5 +1,7 @@
-// Application shell: top bar, tree canvas with train strip and playback controls,
-// right column of panels, setup drawer and user guide.
+// Application shell in two modes. Simple: a top bar with Examples and View menus, the tree,
+// a caption, few controls and the narration log; the other panels in the Details drawer.
+// Advanced: every control in the top bar, the train strip, the right column of panels.
+// Both: setup drawer, compare view and user guide.
 import { useEffect, useState } from "react";
 import { usePlayback } from "./playback/store";
 import { TreeCanvas } from "./components/TreeCanvas";
@@ -16,6 +18,11 @@ import { EventLog } from "./components/panels/EventLog";
 import { MetricsPanel } from "./components/panels/MetricsPanel";
 import { ResourcesPanel } from "./components/panels/ResourcesPanel";
 import { Legend } from "./components/panels/Legend";
+import { Caption } from "./components/shell/Caption";
+import { DetailsButton, DetailsDrawer } from "./components/shell/DetailsDrawer";
+import { ExamplesMenu } from "./components/shell/ExamplesMenu";
+import { ModeSwitch } from "./components/shell/ModeSwitch";
+import { ViewMenu } from "./components/shell/ViewMenu";
 
 const QUICK_PRESETS = ["E1", "E2", "E1-switch", "E3", "E4", "demo-uniform", "qudit-short", "dualrail"];
 const TABS = ["Phasors", "Metrics", "Resources", "Events", "Legend"] as const;
@@ -63,21 +70,70 @@ function useKeyboard() {
   }, []);
 }
 
+function SetupButton() {
+  const setSetupOpen = usePlayback((s) => s.setSetupOpen);
+  return (
+    <button className="btn primary" title="Choose the architecture, the input superposition, the memory and the noise, then run the engine" data-testid="open-setup" onClick={() => setSetupOpen(true)}>
+      ☰ Setup
+    </button>
+  );
+}
+
+function Brand() {
+  return (
+    <strong className="brand" title="Quantum-walker quantum RAM simulator">
+      qram-walkers
+    </strong>
+  );
+}
+
+function ThemeButton() {
+  const theme = usePlayback((s) => s.view.theme);
+  const setView = usePlayback((s) => s.setView);
+  return (
+    <button
+      className="btn"
+      title="Switch between the light 'paper' theme and the dark 'talk' theme"
+      data-testid="theme-toggle"
+      onClick={() => setView({ theme: theme === "paper" ? "talk" : "paper" })}
+    >
+      {theme === "paper" ? "☾ talk" : "☀ paper"}
+    </button>
+  );
+}
+
+function GuideButton() {
+  const openHelp = usePlayback((s) => s.openHelp);
+  return (
+    <button className="btn" title="Open the user guide (?)" data-testid="open-help" onClick={() => openHelp(null)}>
+      ? Guide
+    </button>
+  );
+}
+
+function SimpleTopBar() {
+  return (
+    <header className="topbar">
+      <SetupButton />
+      <Brand />
+      <ExamplesMenu />
+      <span className="spacer" />
+      <ViewMenu />
+      <DetailsButton />
+      <ModeSwitch />
+      <ThemeButton />
+      <GuideButton />
+    </header>
+  );
+}
+
 function TopBar() {
   const s = usePlayback();
-  const runPreset = (name: string) => {
-    const p = s.presets.find((x) => x.name === name);
-    if (p) void s.run(p.config);
-  };
   const v = s.view;
   return (
     <header className="topbar">
-      <button className="btn primary" title="Choose the architecture, the input superposition, the memory and the noise, then run the engine" data-testid="open-setup" onClick={() => s.setSetupOpen(true)}>
-        ☰ Setup
-      </button>
-      <strong className="brand" title="Quantum-walker quantum RAM simulator">
-        qram-walkers
-      </strong>
+      <SetupButton />
+      <Brand />
       <span className="muted presets-label">Examples:</span>
       {QUICK_PRESETS.map((name) => {
         const p = s.presets.find((x) => x.name === name);
@@ -88,7 +144,7 @@ function TopBar() {
             disabled={!p || s.busy}
             title={p ? `${p.title}. ${p.description}` : "Preset not available (engine not reachable?)"}
             data-testid={`preset-${name}`}
-            onClick={() => runPreset(name)}
+            onClick={() => void s.runPreset(name)}
           >
             {name}
           </button>
@@ -145,14 +201,8 @@ function TopBar() {
           <option value="amp">opacity ∝ |α|</option>
         </select>
       </label>
-      <button
-        className="btn"
-        title="Switch between the light 'paper' theme and the dark 'talk' theme"
-        data-testid="theme-toggle"
-        onClick={() => s.setView({ theme: v.theme === "paper" ? "talk" : "paper" })}
-      >
-        {v.theme === "paper" ? "☾ talk" : "☀ paper"}
-      </button>
+      <ModeSwitch />
+      <ThemeButton />
       <button
         className="btn"
         title="Run the same input and memory on another variant and watch the two side by side, on one clock"
@@ -162,9 +212,7 @@ function TopBar() {
       >
         Compare
       </button>
-      <button className="btn" title="Open the user guide (?)" data-testid="open-help" onClick={() => s.openHelp(null)}>
-        ? Guide
-      </button>
+      <GuideButton />
     </header>
   );
 }
@@ -176,6 +224,7 @@ export function App() {
   const traj = usePlayback((s) => s.traj);
   const engineStatus = usePlayback((s) => s.engineStatus);
   const compareOpen = usePlayback((s) => s.compareOpen);
+  const mode = usePlayback((s) => s.mode);
   const [tab, setTab] = useState<Tab>("Metrics");
   usePlaybackLoop();
   useKeyboard();
@@ -190,14 +239,14 @@ export function App() {
     const s = usePlayback.getState();
     void s.loadPresets().then(() => {
       const st = usePlayback.getState();
-      const e1 = st.presets.find((p) => p.name === "E1");
-      if (e1 && !st.traj) void st.run(e1.config);
+      if (!st.traj) void st.runPreset("E1");
     });
   }, []);
 
+  const simple = mode === "simple";
   return (
-    <div className="app">
-      <TopBar />
+    <div className={`app ${simple ? "mode-simple" : "mode-advanced"}`} data-mode={mode}>
+      {simple ? <SimpleTopBar /> : <TopBar />}
       {error && (
         <div className="error-banner" role="alert" data-testid="error">
           {error}
@@ -209,41 +258,56 @@ export function App() {
       {traj && traj.meta.warnings.length > 0 && (
         <div className="warn-banner">{traj.meta.warnings.join(" · ")}</div>
       )}
-      <main className="main">
-        <section className="stage">
-          <TreeCanvas />
-          <TrainStrip />
-          <Controls />
-        </section>
-        <aside className="side">
-          <Narration />
-          <KetPanel />
-          <section className="panel tabs-panel">
-            <header className="panel-head tabs">
-              {TABS.map((t) => (
-                <button key={t} className={`btn ${tab === t ? "active" : ""}`} title={`Show the ${t} panel`} data-testid={`tab-${t}`} onClick={() => setTab(t)}>
-                  {t}
-                </button>
-              ))}
-              <span className="spacer" />
-              <InfoButton anchor="ui-panels" topic="the side panels" />
-            </header>
-            <div className="tab-body">
-              {tab === "Phasors" && <PhasorPanel />}
-              {tab === "Metrics" && <MetricsPanel />}
-              {tab === "Resources" && <ResourcesPanel />}
-              {tab === "Events" && <EventLog />}
-              {tab === "Legend" && <Legend />}
-            </div>
+      {simple ? (
+        <main className="main simple">
+          <section className="stage">
+            <TreeCanvas />
+            <Caption always />
+            <Controls simple />
           </section>
-        </aside>
-      </main>
+          <aside className="side">
+            <Narration fill />
+          </aside>
+        </main>
+      ) : (
+        <main className="main">
+          <section className="stage">
+            <TreeCanvas />
+            <Caption always={false} />
+            <TrainStrip />
+            <Controls />
+          </section>
+          <aside className="side">
+            <Narration />
+            <KetPanel />
+            <section className="panel tabs-panel">
+              <header className="panel-head tabs">
+                {TABS.map((t) => (
+                  <button key={t} className={`btn ${tab === t ? "active" : ""}`} title={`Show the ${t} panel`} data-testid={`tab-${t}`} onClick={() => setTab(t)}>
+                    {t}
+                  </button>
+                ))}
+                <span className="spacer" />
+                <InfoButton anchor="ui-panels" topic="the side panels" />
+              </header>
+              <div className="tab-body">
+                {tab === "Phasors" && <PhasorPanel />}
+                {tab === "Metrics" && <MetricsPanel />}
+                {tab === "Resources" && <ResourcesPanel />}
+                {tab === "Events" && <EventLog />}
+                {tab === "Legend" && <Legend />}
+              </div>
+            </section>
+          </aside>
+        </main>
+      )}
       {engineStatus && (
         <div className="busy" aria-live="polite" data-testid="engine-status">
           {engineStatus}
         </div>
       )}
       {busy && !engineStatus && <div className="busy" aria-live="polite">running the engine…</div>}
+      {simple && <DetailsDrawer />}
       <SetupDrawer />
       {compareOpen && <ComparePane />}
       <HelpPanel />
