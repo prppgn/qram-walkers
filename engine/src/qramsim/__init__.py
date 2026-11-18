@@ -11,7 +11,7 @@ from .api import SimulationResult, simulate
 from .config import InputTerm, Options, RecordOptions, RunConfig
 from .trajectory import Trajectory
 
-__version__ = "0.1.0"
+__version__ = "0.2.0"
 
 __all__ = [
     "InputTerm",

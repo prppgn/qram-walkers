@@ -2,7 +2,7 @@ cff-version: 1.2.0
 message: "If you use this program, please cite the paper (preferred citation), and the software if it produced your results."
 type: software
 title: "qram-walkers: simulator and visualiser of the quantum-walker quantum RAM"
-version: 0.1.0
+version: 0.2.0
 license: MIT
 repository-code: "https://github.com/prppgn/qram-walkers"
 keywords:
