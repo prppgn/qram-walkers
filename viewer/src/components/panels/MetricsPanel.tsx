@@ -350,7 +350,7 @@ export function MetricsPanel() {
               <th title="Address read from the output address walkers">address</th>
               <th title="Data read from the output data walkers (– = none)">data</th>
               <th title="Bits stored in the memory cell of the address, b^(a)">
-                b<sup>(a)</sup>
+                <Scripted text="b^{(a)}" />
               </th>
               <th title="Probability |α|² of the branch">prob.</th>
               <th title="Well formed: every walker left in its slot, red, flags present, switches off">ok</th>

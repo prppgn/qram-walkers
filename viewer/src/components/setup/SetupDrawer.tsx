@@ -26,6 +26,7 @@ import {
   type SetupDraft,
 } from "./configModel";
 import "./setup.css";
+import { Scripted } from "../panels/KetPanel";
 
 const COPY_MODE_INFO: Record<string, { label: string; tip: string }> = {
   global: {
@@ -298,7 +299,7 @@ export function SetupDrawer() {
                   update({ extraOptions: { ...draft.extraOptions, include_last_backup: e.target.checked } })
                 }
               />
-              last data backup D̃<sub>m</sub>
+              <Scripted text="last data backup D̃_m" />
             </label>
           )}
           {OPTIONS.map((o) => (

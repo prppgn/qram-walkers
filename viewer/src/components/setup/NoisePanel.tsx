@@ -4,6 +4,7 @@
 // branches; the viewer only edits the configuration.
 import { useState, type ReactNode } from "react";
 import { InfoButton } from "../Panel";
+import { Scripted } from "../panels/KetPanel";
 import {
   absentGateTypes,
   absentTargets,
@@ -301,7 +302,7 @@ function NoiseCard(props: {
             onChange={(e) => set({ vacuumPhase: e.target.checked })}
           />
           <span>
-            vacuum phase e<sup>−iθ</sup> on empty targets
+            <Scripted text="vacuum phase e^{−iθ} on empty targets" />
           </span>
         </label>
       )}

@@ -5,14 +5,27 @@ import { usePlayback } from "../../playback/store";
 import { InfoButton, Panel } from "../Panel";
 import { resourceRows, VARIANT_COMPARISON, type EngineResources, type ResourceRow } from "./helpAnchors";
 import { Scripted } from "./KetPanel";
+import { Tex } from "../Ket";
+import { resourceFormulaParts } from "../../layout/proseTex";
 import "./panels.css";
+
+/** A closed formula of the paper typeset by KaTeX, its remark in words. */
+function Formula({ text }: { text: string }) {
+  return (
+    <div className="pn-formula pn-formula-block" data-plain={text}>
+      {resourceFormulaParts(text).map((p, i) =>
+        p.t === "tex" ? <Tex key={i} tex={p.v} /> : <span key={i}>{p.v}</span>,
+      )}
+    </div>
+  );
+}
 
 function PaperCell({ row }: { row: ResourceRow }) {
   if (!row.paper && !row.formula) return <span className="muted">—</span>;
   return (
     <>
       {row.paper && <div className="mono">{row.paper}</div>}
-      {row.formula && <Scripted text={row.formula} className="pn-formula pn-formula-block" />}
+      {row.formula && <Formula text={row.formula} />}
     </>
   );
 }

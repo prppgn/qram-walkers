@@ -7,15 +7,22 @@ import { branchLabel, formatAmp, modulus, phaseDeg, type KetOrder } from "../../
 import { usePlayback } from "../../playback/store";
 import { Ket } from "../Ket";
 import { InfoButton, Panel } from "../Panel";
-import { formulaParts, omittedText } from "./helpAnchors";
+import { omittedText } from "./helpAnchors";
+import { proseParts } from "../../layout/proseTex";
+import { texHtml } from "../../layout/tex";
 import "./panels.css";
 
-/** A string with ^x / _x / ^{…} / _{…} rendered as superscripts and subscripts. */
+/** A sentence whose mathematics (A₁, Û_B⁽¹⁾, |R⟩, |α|², 2^n) is typeset by KaTeX and whose
+ *  words stay in the UI font. The source text is kept in `data-plain` for tests. */
 export function Scripted({ text, className }: { text: string; className?: string }) {
   return (
-    <span className={className}>
-      {formulaParts(text).map((p, i) =>
-        p.t === "sup" ? <sup key={i}>{p.v}</sup> : p.t === "sub" ? <sub key={i}>{p.v}</sub> : <span key={i}>{p.v}</span>,
+    <span className={className} data-plain={text}>
+      {proseParts(text).map((p, i) =>
+        p.t === "tex" ? (
+          <span key={i} className="tex" title={p.src} dangerouslySetInnerHTML={{ __html: texHtml(p.v) }} />
+        ) : (
+          <span key={i}>{p.v}</span>
+        ),
       )}
     </span>
   );
@@ -198,7 +205,7 @@ export function KetPanel() {
           title={showCheckpoints ? "Hide the paper checkpoints" : "Show the paper checkpoints ψ_in … ψ_out"}
           onClick={() => setShowCheckpoints(!showCheckpoints)}
         >
-          {showCheckpoints ? "▾" : "▸"} Paper checkpoints (ψ<sub>in</sub> … ψ<sub>out</sub>)
+          {showCheckpoints ? "▾" : "▸"} <Scripted text="Paper checkpoints (ψ_in … ψ_out)" />
         </button>
         <span className="muted pn-small">{checkpoints.length}</span>
         <InfoButton anchor="faq-kets" topic="why the kets differ from the paper's ψ_1, ψ_2, …" />

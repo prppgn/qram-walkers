@@ -361,46 +361,6 @@ export function omittedText(o: { count: number; weight: number }): string {
   } not stored in this trajectory`;
 }
 
-/** Segments of a formula string with ^x / _x / ^{…} / _{…} turned into sup/sub. */
-export interface FormulaPart {
-  t: "text" | "sup" | "sub";
-  v: string;
-}
-
-export function formulaParts(s: string): FormulaPart[] {
-  const parts: FormulaPart[] = [];
-  const push = (t: FormulaPart["t"], v: string) => {
-    if (!v) return;
-    const last = parts[parts.length - 1];
-    if (last && last.t === t) last.v += v;
-    else parts.push({ t, v });
-  };
-  let i = 0;
-  while (i < s.length) {
-    const c = s[i]!;
-    if ((c === "^" || c === "_") && i + 1 < s.length) {
-      const t = c === "^" ? "sup" : "sub";
-      if (s[i + 1] === "{") {
-        const end = s.indexOf("}", i + 2);
-        if (end > 0) {
-          push(t, s.slice(i + 2, end));
-          i = end + 1;
-          continue;
-        }
-      }
-      const m = /^[A-Za-z0-9′']+/.exec(s.slice(i + 1));
-      if (m) {
-        push(t, m[0]);
-        i += 1 + m[0].length;
-        continue;
-      }
-    }
-    push("text", c);
-    i += 1;
-  }
-  return parts;
-}
-
 // ---------------------------------------------------------------- resources
 
 interface PaperResources {

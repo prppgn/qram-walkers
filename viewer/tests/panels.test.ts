@@ -1,5 +1,6 @@
 // Pure helpers of the information panels, checked against the fixture trajectories.
 import { readFileSync } from "node:fs";
+import { proseParts, resourceFormulaParts } from "../src/layout/proseTex";
 import { describe, expect, it } from "vitest";
 import {
   anchorForEvent,
@@ -16,7 +17,6 @@ import {
   formatExp,
   formatNearOne,
   formatProb,
-  formulaParts,
   coherentSamples,
   formatParam,
   formatWeight,
@@ -234,20 +234,37 @@ describe("number formatting", () => {
     expect(formatExp(2e5)).toBe("2.0e5");
   });
 
-  it("splits formulas into sup/sub parts", () => {
-    expect(formulaParts("2(2^n − 1)")).toEqual([
-      { t: "text", v: "2(2" },
-      { t: "sup", v: "n" },
-      { t: "text", v: " − 1)" },
+  it("cuts the mathematics out of sentences and typesets it as TeX", () => {
+    const tex = (s: string) => proseParts(s).filter((p) => p.t === "tex").map((p) => p.v);
+    expect(tex("A₁ enters the tree at the input port")).toEqual(["A_{1}"]);
+    expect(tex("Û_B⁽¹⁾ copies D̃₁↓ into Ŝ_M†")).toEqual([
+      "\\hat{U}_{B}^{(1)}",
+      "\\tilde{D}_{1}^{\\downarrow }",
+      "\\hat{S}_{M}^{\\dagger }",
     ]);
-    expect(formulaParts("n_sites^d = n + m − d")).toEqual([
-      { t: "text", v: "n" },
-      { t: "sub", v: "sites" },
-      { t: "sup", v: "d" },
-      { t: "text", v: " = n + m − d" },
+    expect(tex("|11⟩: |α|² = 0.5 on |R⟩")).toEqual(["\\lvert 11\\rangle", "\\lvert \\alpha\\rvert^{2}", "\\lvert \\mathrm{R}\\rangle"]);
+    expect(tex("Û_○ ⊕ Û_● and 2^n cells")).toEqual(["\\hat{U}_{\\circ }", "\\hat{U}_{\\bullet }", "2^{n}"]);
+    expect(tex("|⟨ψ_ideal|ψ_out⟩|² with |b^(a)⟩_D and ⟨N⟩")).toEqual([
+      "\\lvert\\langle \\psi_{\\text{ideal}}\\vert \\psi_{\\text{out}}\\rangle\\rvert^{2}",
+      "\\lvert b^{(a)}\\rangle_{D}",
+      "\\langle N\\rangle",
     ]);
-    expect(formulaParts("n + m + 1 (+1 delimiter D_{m+1})").at(-2)).toEqual({ t: "sub", v: "m+1" });
-    expect(formulaParts("O(n(n + m))")).toEqual([{ t: "text", v: "O(n(n + m))" }]);
+    // Identifiers and plain words are not mathematics.
+    expect(proseParts("noise (scatter_flip, p = 0.1) on a site")).toEqual([
+      { t: "text", v: "noise (scatter_flip, p = 0.1) on a site" },
+    ]);
+  });
+
+  it("typesets the closed formulas of the paper and keeps their remarks as prose", () => {
+    const parts = resourceFormulaParts("T_parallel = 5n + 2m (pass-through memory cell)");
+    expect(parts[0]).toMatchObject({ t: "tex", v: "T_{\\text{parallel}} = 5n + 2m" });
+    expect(parts.slice(1).map((p) => p.v).join("")).toBe(" (pass-through memory cell)");
+    expect(resourceFormulaParts("Σ_d (n + m − d) = (n² + n(2m − 1))/2")[0]!.v).toBe("\\sum_{d} (n + m - d) = (n^{2} + n(2m - 1))/2");
+    expect(resourceFormulaParts("2(2^n − 1)")[0]!.v).toBe("2(2^{n} - 1)");
+    expect(resourceFormulaParts("n_sites^d = n + m − d (per tree)")[0]!.v).toBe("n_{\\text{sites}}^{d} = n + m - d");
+    const note = resourceFormulaParts("2(n + m) − 1 (no D̃_m, arXiv count)");
+    expect(note.find((p) => p.t === "tex" && p.src === "D̃_m")?.v).toBe("\\tilde{D}_{m}");
+    expect(resourceFormulaParts("O(n(n + m)); comparison table: n²/2 + nm + O(n + m)").map((p) => p.t)).toEqual(["tex", "text", "text", "tex"]);
   });
 });
 

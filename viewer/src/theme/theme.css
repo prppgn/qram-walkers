@@ -34,9 +34,15 @@
   --phase-init: #e9e9e9;
   --shadow: 0 1px 3px rgba(0, 0, 0, 0.08), 0 4px 16px rgba(0, 0, 0, 0.06);
   --glow: none;
-  --font: "Inter", "Segoe UI", system-ui, -apple-system, sans-serif;
-  --mono: "JetBrains Mono", "SF Mono", Menlo, Consolas, monospace;
-  --serif: "STIX Two Text", "Latin Modern Roman", "Cambria", Georgia, serif;
+  /* Type (self-hosted, see fonts.ts): Plex Sans for the interface, Plex Mono for numbers
+     and code, KaTeX for mathematics (KaTeX_Main also draws the math in the SVG tree). No
+     text below 13 px; panel text 14 px; formulas 1.05 em. */
+  --font: "IBM Plex Sans", "Segoe UI", system-ui, -apple-system, sans-serif;
+  --mono: "IBM Plex Mono", "SF Mono", Menlo, Consolas, monospace;
+  --serif: "KaTeX_Main", "Latin Modern Roman", "Times New Roman", serif;
+  --fs-body: 16px;
+  --fs-panel: 14px;
+  --fs-small: 13px;
   color-scheme: light;
 }
 
@@ -89,8 +95,13 @@ body {
   background: var(--bg);
   color: var(--ink);
   font-family: var(--font);
-  font-size: 13px;
+  font-size: var(--fs-body);
   line-height: 1.45;
+}
+
+/* all formulas, in the guide and in the panels */
+.katex {
+  font-size: 1.05em;
 }
 
 button,
@@ -110,6 +121,7 @@ textarea {
 }
 
 .btn {
+  font-size: 14px;
   display: inline-flex;
   align-items: center;
   gap: 4px;
@@ -149,13 +161,13 @@ textarea {
   border: 1px solid var(--line);
   border-radius: 999px;
   padding: 1px 8px;
-  font-size: 12px;
+  font-size: 13px;
   background: var(--surface-2);
 }
 
 .badge {
   display: inline-block;
-  font-size: 10.5px;
+  font-size: 13px;
   text-transform: uppercase;
   letter-spacing: 0.04em;
   padding: 0 6px;
@@ -169,6 +181,7 @@ textarea {
   display: flex;
   align-items: center;
   gap: 6px;
+  font-size: 14px;
 }
 .field input[type="number"],
 .field select,
@@ -185,7 +198,7 @@ textarea {
 
 .kbd {
   font-family: var(--mono);
-  font-size: 11px;
+  font-size: 13px;
   border: 1px solid var(--line);
   border-bottom-width: 2px;
   border-radius: 4px;
@@ -218,6 +231,7 @@ textarea {
   padding: 8px 10px;
   overflow: auto;
   min-height: 0;
+  font-size: var(--fs-panel);
 }
 .info-btn {
   border: none;
@@ -229,27 +243,20 @@ textarea {
   padding: 0 2px;
 }
 
-/* Kets in the paper's notation */
+/* Kets in the paper's notation, typeset by KaTeX (Ket.tsx); the walker colours are
+   classes so that both themes colour them */
 .ket {
-  font-family: var(--serif);
-  font-size: 15px;
+  font-size: 16px;
   white-space: nowrap;
 }
-.ket .g-R {
+.g-R {
   color: var(--red);
-  font-weight: 600;
 }
-.ket .g-B {
+.g-B {
   color: var(--blue);
-  font-weight: 600;
 }
 .ket .g-E {
-  font-weight: 700;
-}
-.ket sup,
-.ket sub {
-  font-size: 10px;
-  font-family: var(--font);
+  color: var(--ink-2);
 }
 
 table.grid {
@@ -266,7 +273,7 @@ table.grid td {
 table.grid th {
   font-weight: 600;
   color: var(--ink-2);
-  font-size: 12px;
+  font-size: 13px;
 }
 
 .ket .ket-stray,

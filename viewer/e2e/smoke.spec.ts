@@ -1,9 +1,11 @@
 // Phase 1 acceptance: load E1, step by gate to the end and check the
 // final ket; switch theme; add a superposition term and see two branches with phase
 // rings; every control has a tooltip and every panel an ⓘ.
-import { expect, test, type Page } from "@playwright/test";
+import { expect, test, type Locator, type Page } from "@playwright/test";
 
 const compact = (s: string | null) => (s ?? "").replace(/\s+/g, "");
+// The ket of a row as plain text (the panel typesets it with KaTeX).
+const ketOf = async (row: Locator) => compact(await row.getByTestId("ket").first().getAttribute("data-plain"));
 
 async function loadPreset(page: Page, name: string) {
   await page.getByTestId(`preset-${name}`).click();
@@ -29,7 +31,7 @@ test("E1: step by gate to the end, final ket matches the paper", async ({ page }
   await expect(counter).toContainText("tick 22 / 22");
   const rows = page.getByTestId("ket-row");
   await expect(rows).toHaveCount(1);
-  expect(compact(await rows.first().textContent())).toContain("|Rout⟩D₁|Rout⟩D₀|∅out⟩A₂|Rout⟩A₁");
+  expect(await ketOf(rows.first())).toContain("|Rout⟩D₁|Rout⟩D₀|∅out⟩A₂|Rout⟩A₁");
   await expect(page.getByTestId("narration")).toContainText("leaves the tree");
 });
 
@@ -95,7 +97,7 @@ test("backup variant E3: step to the end, final ket and backup windows", async (
   await page.getByTestId("to-end").click();
   const row = page.getByTestId("ket-row").first();
   // b⁽¹⁰⁾ = 10: D₁ kept, D₂ erased; every backup back to red at the port
-  expect(compact(await row.textContent())).toContain("|∅out⟩D₂|Rout⟩D̃₁|Rout⟩D₁|Rout⟩Ã₂|∅out⟩A₂|Rout⟩Ã₁|Rout⟩A₁");
+  expect(await ketOf(row)).toContain("|∅out⟩D₂|Rout⟩D̃₁|Rout⟩D₁|Rout⟩Ã₂|∅out⟩A₂|Rout⟩Ã₁|Rout⟩A₁");
   await page.getByTestId("open-setup").click();
   await expect(page.getByTestId("setup-variant")).toHaveValue("backup");
   await expect(page.getByTestId("option-include_last_backup")).not.toBeChecked();
@@ -117,9 +119,9 @@ test("noise: a lost D₁ turns into a ghost and the narration says so", async ({
   await log.getByText(/lost \(blue walker/).first().click();
   await expect(page.getByTestId("narration")).toContainText("lost");
   const row = page.getByTestId("ket-row").first();
-  expect(compact(await row.textContent())).toMatch(/\|∅[^⟩]*⟩D₁/);
+  expect(await ketOf(row)).toMatch(/\|∅[^⟩]*⟩D₁/);
   await page.getByTestId("to-end").click();
-  expect(compact(await page.getByTestId("ket-row").first().textContent())).toContain("|∅out⟩D₁");
+  expect(await ketOf(page.getByTestId("ket-row").first())).toContain("|∅out⟩D₁");
 });
 
 test("noise: a scatter flip misroutes D₁ and the metrics show the failure", async ({ page }) => {
@@ -157,8 +159,8 @@ test("dual-rail: two stacked trees, the data that read 0 come back on the ↑ tr
   const rows = page.getByTestId("ket-row");
   await expect(rows).toHaveCount(2);
   // b(00) = 1: D₁ on ↓; b(11) = 0: D₁ on ↑
-  expect(compact(await rows.nth(0).textContent())).toContain("|↓Rout⟩D₁");
-  expect(compact(await rows.nth(1).textContent())).toContain("|↑Rout⟩D₁");
+  expect(await ketOf(rows.nth(0))).toContain("|↓Rout⟩D₁");
+  expect(await ketOf(rows.nth(1))).toContain("|↑Rout⟩D₁");
   await page.getByRole("button", { name: "Resources" }).click();
   await expect(page.getByTestId("variant-comparison")).toContainText("Dual-rail, long range");
 });
