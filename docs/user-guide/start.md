@@ -12,19 +12,24 @@ companion with the gate tables of every variant, the *technical paper* (in prepa
 
 ## A two-minute tour {#start-tour}
 
-1. Click **E1** in the top bar: a classical address, $a = 10$. On the left of the tree the train
-   waits at the input port.
-2. Press **Space**. The train enters, the walkers change colour, the train splits at the
-   bifurcations, the data walker reaches cell $10$, reads the stored bit and everything comes
-   back. Press Space again to pause.
-3. Press **Home** and then **→** a few times: each step stops at the next gate that acted, and
-   the **Narration** panel says in words what happened. **Explain** opens the definition of
-   that gate here in the guide. The **State** panel shows the ket, in the paper's notation.
-4. Click **E2**: now the address is $(\ket{00} + \ket{11})/\sqrt2$. Each branch is drawn separately;
-   click a line in the State panel to highlight one branch and dim the other.
+The program opens in **Simple** mode on the example **E1**: a classical address, $a = 10$,
+and one stored bit per cell. On the left of the tree the train waits at the input port.
+
+1. Press **Space** (or ▶). The train enters, the walkers change colour, the train splits at
+   the bifurcations. Playback stops at the key moments (the end of each level, the query,
+   the return, the end) with a note under the tree; **Space** continues. The data walker
+   reaches cell $10$, reads the stored bit and everything comes back.
+2. The **Narration** log on the right keeps every sentence so far, under the headers
+   **Level 1**, **Level 2**, **Query**, **Return**. Click a line to go back to that tick;
+   **Explain** opens the definition of that gate here in the guide.
+3. Press **←** and **→**: each step goes to the previous or next gate that acted.
+   **Details** → **State** shows the quantum state of the walkers, in the paper's notation.
+4. In **Examples** choose **E2**: now the address is $(\ket{00} + \ket{11})/\sqrt2$. Each
+   branch is drawn separately.
 5. Open **☰ Setup** and change anything: the variant, the address bits, the memory, the noise.
    **Run** at the bottom computes it.
-6. Click **Compare** to watch the same input on another variant, on one clock.
+6. Switch to **Advanced** in the top bar to see every panel at once, the step modes and
+   **Compare**, which plays the same input on another variant, on one clock.
 
 Every number and position you see is computed by the simulation engine; the interface only
 draws them.
@@ -33,7 +38,8 @@ draws them.
 
 * **Hover** over any control: a tooltip says what it does.
 * **ⓘ** next to a panel or a control opens the guide at the right place.
-* **Explain** in the Narration panel opens the definition of what just happened.
+* **Explain** in the Narration log opens the definition of what just happened.
+* [Simple and Advanced](ui.md#ui-modes) explains the two modes of the interface.
 * The [Controls](controls.md#controls) page describes every button, field and menu.
 
 ## I want to… {#start-tasks}

@@ -13,7 +13,7 @@ const pages = Object.fromEntries(
 const REQUIRED: Record<string, string[]> = {
   start: ["start-tour", "start-help", "start-tasks"],
   controls: [
-    "controls", "controls-topbar", "controls-tree", "controls-export", "controls-playback", "controls-state", "controls-panels",
+    "controls", "controls-modes", "controls-topbar", "controls-tree", "controls-export", "controls-playback", "controls-state", "controls-panels",
     "controls-setup", "controls-input", "controls-memory", "controls-noise", "controls-options", "controls-presets",
     "controls-compare", "controls-guide",
   ],
@@ -38,7 +38,7 @@ const REQUIRED: Record<string, string[]> = {
     "noise-strays", "noise-collisions", "noise-absorb", "noise-ensembles",
     "noise-overrotation", "noise-imbalance", "noise-pruning",
   ],
-  ui: ["ui-canvas", "ui-export", "ui-figure", "ui-compare", "ui-static", "ui-playback", "ui-timeline", "ui-train", "ui-kets", "ui-phasors", "ui-narration", "ui-panels", "ui-events", "ui-legend", "ui-setup", "ui-memory", "ui-themes", "ui-keyboard", "ui-qudit", "ui-dualrail", "ui-lens"],
+  ui: ["ui-modes", "ui-canvas", "ui-export", "ui-figure", "ui-compare", "ui-static", "ui-playback", "ui-timeline", "ui-train", "ui-kets", "ui-phasors", "ui-narration", "ui-panels", "ui-events", "ui-legend", "ui-setup", "ui-memory", "ui-themes", "ui-keyboard", "ui-qudit", "ui-dualrail", "ui-lens"],
 };
 
 describe("user guide", () => {

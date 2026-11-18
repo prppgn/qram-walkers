@@ -14,7 +14,12 @@ The protocol is described in the letter arXiv:2508.02855 (*the paper*) and in a 
 *technical paper* (in preparation), with the gate tables of every variant; the guide cites
 them as "the paper" and "technical paper, §Section".
 
-![The viewer on the worked example E2](docs/figures/app.png)
+![The viewer in Simple mode on the worked example E2, paused when the train reaches the memory cells](docs/figures/app.png)
+
+The viewer opens in **Simple** mode: a large tree, a caption, the narration as a log and
+pauses at the key moments of the run. **Advanced** mode shows every panel at once:
+
+![The viewer in Advanced mode on the worked example E2, during the query](docs/figures/app-advanced.png)
 
 ## Install and run
 
@@ -40,6 +45,8 @@ Step by step, with troubleshooting: **[INSTALL.md](INSTALL.md)**.
   backup, checked against Eq. (1) of the paper exactly.
 * **Any input**: superpositions of addresses with your own amplitudes, any memory contents.
 * **The state at every tick**, in the paper's ket notation, with a sentence for every event.
+* **Two modes**: Simple, for watching a run with pauses at its key moments, and Advanced, with
+  every panel and control at once.
 * **Noise**: loss, flips, dephasing, depolarising, gate and clock errors, memory errors and coherent
   errors, sampled with quantum jumps; ensembles and sweeps.
 * **Metrics and resources**: fidelity, success, consistency, entanglement entropy, heralded

@@ -3,7 +3,28 @@
 Every button, field and menu of the interface, by where it is. Each one also has a tooltip;
 the [Interface](ui.md#ui-canvas) page explains what the drawings mean.
 
-## Top bar {#controls-topbar}
+## Simple and Advanced {#controls-modes}
+
+The interface has two modes, switched by **Simple** | **Advanced** in the top bar; the
+choice is remembered in this browser. **Simple**, the mode of a first visit, shows the
+tree large, a caption under it, the narration log and the few controls needed to watch a
+run; the other panels are one click away under **Details**. **Advanced** shows every panel
+and control at once. Both modes play the same run.
+
+| control (Simple) | what it does |
+|---|---|
+| **☰ Setup** | opens the [setup drawer](#controls-setup) |
+| **Examples** | a menu of ready-made [examples](#controls-presets), each with a one-line description; choosing one runs it |
+| **View** | a menu with the drawing options of the Advanced top bar: **labels**, **ghosts**, **traces**, **cell lens**, **unfolded**, **figure**, **orientation**, **spacing**, **opacity** (described [below](#controls-topbar)) |
+| **Details** | opens a drawer with the other panels, one at a time: **State**, **Metrics**, **Resources**, **Events**, **Phasors**, **Legend**, **Train** (the [train strip](ui.md#ui-train)); **×** or Esc closes it |
+| **Simple** / **Advanced** | switches mode |
+| **talk** / **paper** | the dark or the light theme |
+| **? Guide** | opens this guide |
+
+The Simple playback bar has ◀ and ▶︎| (one gate back or forward), ▶ / ⏸, **speed** and
+**Pause at key moments**, described [under Playback](#controls-playback).
+
+## Top bar (Advanced) {#controls-topbar}
 
 | control | what it does |
 |---|---|
@@ -19,6 +40,7 @@ the [Interface](ui.md#ui-canvas) page explains what the drawings mean.
 | **proportional** / **uniform** | edge lengths proportional to their number of sites, or all levels equally long |
 | **opacity ∝ \|α\|²** / **opacity ∝ \|α\|** | how strongly a branch is drawn according to its amplitude |
 | **talk** / **paper** | switches between the dark theme, for projectors, and the light one; the choice is remembered |
+| **Simple** / **Advanced** | switches [mode](#controls-modes) |
 | **Compare** | opens the [comparison](#controls-compare) of two variants |
 | **? Guide** | opens this guide |
 
@@ -59,7 +81,8 @@ the [Interface](ui.md#ui-canvas) page explains what the drawings mean.
 | **Level** | Shift + ← or → | a step goes to the next time the leading walker crosses a bifurcation |
 | **Phase** | | a step goes to the start of the next phase |
 | **idle gates** | | in Gate mode, also stops at gates that fired with no control walker to act on (they do nothing) |
-| **speed** | | clock ticks per second during playback |
+| **speed** | | clock ticks per second during playback (1 in Simple mode, 2 in Advanced, when the mode is chosen) |
+| **Pause at key moments** | | while playing, stops at the end of each level's gates, at the start of the query, at the start of the return trip and at the end, with a highlighted note under the tree; Space or a click on the note continues. On by default in Simple mode |
 | **routing**, **query**, **inverse routing** | | jump to the start of that phase |
 | counter | | the current tick and phase |
 | timeline | | click or drag to jump; the bands are the phases, the dark marks the gates that acted |
@@ -69,6 +92,7 @@ the [Interface](ui.md#ui-canvas) page explains what the drawings mean.
 | control | what it does |
 |---|---|
 | **▾** / **▸** on a panel | collapses or opens the panel |
+| a line of the narration | jumps to the tick of that event |
 | **Explain** | opens the guide at the definition of that event |
 | **tail → front** / **front → tail** | order of the factors in the kets: the paper's, or the train's |
 | **(d,l)** | shows or hides the position superscripts of the kets |

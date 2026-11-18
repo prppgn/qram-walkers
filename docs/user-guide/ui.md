@@ -5,6 +5,38 @@ colour and position you see comes from the engine; the viewer only draws and
 interpolates them. A run is chosen in **Setup**, computed by the engine, and then played
 back tick by tick.
 
+## Simple and Advanced {#ui-modes}
+
+**Simple** mode, the one of a first visit, is made for watching: the tree takes most of
+the window, a **caption** under it says in one sentence what is happening, the
+[narration](#ui-narration) log on the right keeps every sentence so far, and playback
+stops at the key moments of the run. The other panels are in the **Details** drawer, one at
+a time, and the drawing options in the **View** menu. **Advanced** mode shows everything
+at once: the train strip, the playback modes, the ket panel and the side tabs. The switch
+is in the top bar; the [Controls](controls.md#controls-modes) page lists what each mode
+has.
+
+**Guided playback.** With **Pause at key moments** ticked (the default in Simple mode),
+playback stops
+
+* at the end of the gates of each level, when the address walker $A_d$ has acted on the
+  walkers behind it;
+* when the train reaches the memory cells (the query);
+* when it turns back (the return trip, the exact time reversal of the routing);
+* at the end, when every walker has left the tree.
+
+A highlighted note under the tree says what has just happened; **Space** or a click on the
+note continues. Stepping and the timeline never stop at these moments.
+
+**Narrow windows.** Under 1100 pixels of width the panels move below the tree, which keeps
+at least 60% of the height of the window; scroll down to reach them.
+
+**Text size.** No text is drawn smaller than 13 pixels. When the tree is small on screen
+its labels are scaled back up; what then does not fit is shortened ("level 1" becomes "1",
+"input port, ↑ tree (logical 0)" becomes "input ↑") or left out (the letters inside the
+walkers and the nodes, the slot names, the cell addresses, gate labels that would overlap).
+Zoom in to see them again. Exports always carry every label at its natural size.
+
 ## The tree view {#ui-canvas}
 
 The centre of the screen is the binary tree in the **unfolded "H" layout**:
@@ -257,10 +289,14 @@ input superposition carried by the walkers.
 
 ## Narration {#ui-narration}
 
-Every event of the current tick explained in one sentence: which gate fired, on which
-edges, in which branches it acted and on which walkers; which walker crossed which
-bifurcation and where it went; injections, exits, phase changes. **Explain** opens the
-guide at the definition of the gate or phase.
+A log of the run so far, one sentence per event: which gate fired, on which edges, in
+which branches it acted and on which walkers; which walker crossed which bifurcation and
+where it went; injections, exits, phase changes. New lines appear at the bottom as the run
+advances and the log scrolls to keep them in view; the lines of the current tick are
+highlighted. Headers divide the log into the levels of the routing (**Level 1**,
+**Level 2**, …), the **Query** and the **Return** trip. Click a line to go back to its tick;
+**Explain** opens the guide at the definition of the gate or phase. Stepping back shortens
+the log to the current tick.
 
 ## Side panels {#ui-panels}
 
@@ -328,9 +364,9 @@ this browser.
 
 | key | action |
 |---|---|
-| Space | play / pause |
+| Space | play / pause; at a key moment of guided playback, continue |
 | → / ← | step forward / back in the current step mode |
 | Shift + → / ← | step by level |
 | Home / End | input / output state |
 | ? | open this page |
-| Esc | close the guide or the setup drawer |
+| Esc | close the guide, the setup drawer, the Details drawer or an open menu |
