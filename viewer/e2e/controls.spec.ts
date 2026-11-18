@@ -93,67 +93,71 @@ test("every control on every surface has a tooltip", async ({ page }) => {
   expect(all.length).toBeGreaterThan(100);
 });
 
-test("the Controls page of the guide names every labelled control", async ({ page }) => {
-  const guide = readFileSync(new URL("../../docs/user-guide/controls.md", import.meta.url), "utf-8").toLowerCase();
-  // Text of the labelled controls in a part of the page. Values that change (kets, numbers) are out.
-  const collect = (root: string) =>
-    page.evaluate((sel) => {
-      const out = new Set<string>();
-      const box = document.querySelector(sel);
-      if (!box) return [];
-      const add = (t: string | null) => {
-        const clean = (t ?? "").replace(/\s+/g, " ").trim();
-        if (clean) out.add(clean);
-      };
+const GUIDE = readFileSync(new URL("../../docs/user-guide/controls.md", import.meta.url), "utf-8").toLowerCase();
+
+/** Text of the labelled controls in a part of the page. Values that change (kets, numbers) are out. */
+function collect(page: Page, root: string): Promise<string[]> {
+  return page.evaluate((sel) => {
+    const out = new Set<string>();
+    const add = (t: string | null) => {
+      const clean = (t ?? "").replace(/\s+/g, " ").trim();
+      if (clean) out.add(clean);
+    };
+    for (const box of document.querySelectorAll(sel)) {
       for (const el of box.querySelectorAll("button, label")) {
-        if (el.closest(".ket-row, [data-testid='ket-row'], [data-testid='phasor'], [data-testid='memory-cell'], .setup-preset-head")) continue;
+        if (el.closest(".ket-row, [data-testid='ket-row'], [data-testid='phasor'], [data-testid='memory-cell'], .setup-preset-head, [data-testid='log-line']")) continue;
         if (el.tagName === "LABEL" && el.querySelector("select")) continue;
         add(el.textContent);
       }
       for (const o of box.querySelectorAll("option")) add(o.textContent);
       for (const b of box.querySelectorAll(".setup-preset-head .badge")) add(b.textContent);
-      return [...out];
-    }, root);
-  const dynamic = /^(\|.*|[01]+|ⓘ|[+−✕⏮◀▶⏸⏭▾▸].*|Add a.*|speed.*|tick .*|with.*|.*\d\/s)$/;
-  const named = (label: string) => {
-    // The name of the control: what comes before a bracket, a formula or a symbol.
-    const words = label.replace(/^[^\p{L}]+/u, "").toLowerCase();
-    const plain: string[] = [];
-    for (const word of words.split(" ")) {
-      if (!/^[a-z0-9.,_-]+$/.test(word)) break;
-      plain.push(word);
     }
-    return guide.includes(plain.join(" ") || words);
-  };
+    return [...out];
+  }, root);
+}
+// (a leading symbol: a formula option such as "∝ |α|²" under "opacity", or a button glyph)
+const DYNAMIC = /^(\|.*|[01]+|ⓘ|[+−✕×⏮◀▶⏸⏭▾▸∝].*|Add a.*|speed.*|tick .*|with.*|.*\d\/s)$/;
+/** The guide names the control: what comes before a bracket, a formula or a symbol. */
+function named(label: string): boolean {
+  const words = label.replace(/^[^\p{L}]+/u, "").toLowerCase();
+  const plain: string[] = [];
+  for (const word of words.split(" ")) {
+    if (!/^[a-z0-9.,_-]+$/.test(word)) break;
+    plain.push(word);
+  }
+  return GUIDE.includes(plain.join(" ") || words);
+}
 
+test("the Controls page of the guide names every labelled control", async ({ page }) => {
+  const collectIn = (root: string) => collect(page, root);
   await page.goto("/");
   await expect(page.getByTestId("preset-E2")).toBeEnabled();
   await page.getByTestId("preset-E2").click();
   await expect(page.getByTestId("frame-counter")).toContainText("input");
   await page.getByTestId("export-open").click();
   const labels: string[] = [];
-  for (const sel of [".topbar", ".canvas-tools", ".controls", ".side"]) labels.push(...(await collect(sel)));
+  for (const sel of [".topbar", ".canvas-tools", ".controls", ".side"]) labels.push(...(await collectIn(sel)));
   await page.getByTestId("export-open").click();
   await page.getByTestId("tab-Events").click();
-  labels.push(...(await collect(".tab-body")));
+  labels.push(...(await collectIn(".tab-body")));
   await page.getByTestId("open-setup").click();
   for (const model of ["loss", "overrotation", "beam_splitter_imbalance"]) {
     await page.getByTestId("noise-add-model").selectOption(model);
     await page.getByTestId("noise-add").click();
   }
-  labels.push(...(await collect("[data-testid='setup-drawer']")));
+  labels.push(...(await collectIn("[data-testid='setup-drawer']")));
   await page.getByTestId("setup-variant").selectOption("qudit_short");
   await page.getByTestId("noise-add-model").selectOption("depolarizing");
   await page.getByTestId("noise-add").click();
-  labels.push(...(await collect("[data-testid='setup-noise']")));
+  labels.push(...(await collectIn("[data-testid='setup-noise']")));
   await page.getByTestId("setup-variant").selectOption("backup");
-  labels.push(...(await collect("[data-testid='setup-drawer']")));
+  labels.push(...(await collectIn("[data-testid='setup-drawer']")));
   await page.getByTestId("setup-close").click();
   await page.getByTestId("open-compare").click();
   await expect(page.getByTestId("compare-b")).toBeVisible();
-  labels.push(...(await collect("[data-testid='compare-pane']")));
+  labels.push(...(await collectIn("[data-testid='compare-pane']")));
 
-  const missing = [...new Set(labels)].filter((l) => !dynamic.test(l) && !named(l));
+  const missing = [...new Set(labels)].filter((l) => !DYNAMIC.test(l) && !named(l));
   expect(missing).toEqual([]);
   expect(labels.length).toBeGreaterThan(50);
 });
@@ -171,4 +175,39 @@ test("the guide opens on Start, and its links lead to the right places", async (
   await expect(help.locator('[id="controls-setup"]')).toBeInViewport();
   await help.getByRole("button", { name: "Command line" }).click();
   await expect(help.locator("h1")).toHaveText("Command line");
+});
+
+test.describe("Simple mode", () => {
+  test.use({ storageState: { cookies: [], origins: [] } });
+
+  test("every control has a tooltip and the guide names it", async ({ page }) => {
+    const all: Control[] = [];
+    const labels: string[] = [];
+    const take = async (surface: string, root: string) => {
+      all.push(...(await inventory(page, surface, root)));
+      labels.push(...(await collect(page, root)));
+    };
+    await page.goto("/");
+    await expect(page.getByTestId("frame-counter")).toContainText("input");
+    await page.getByTestId("step-forward").click();
+    await take("top bar", ".topbar");
+    await take("playback", ".controls");
+    await take("caption and log", ".main.simple .side");
+    await page.getByTestId("examples").click();
+    await take("examples menu", "[data-testid='examples-menu']");
+    await page.keyboard.press("Escape");
+    await page.getByTestId("view").click();
+    await take("view menu", "[data-testid='view-menu']");
+    await page.keyboard.press("Escape");
+    await page.getByTestId("open-details").click();
+    for (const tab of ["State", "Metrics", "Resources", "Events", "Phasors", "Legend", "Train"]) {
+      await page.getByTestId(`details-${tab}`).click();
+      await take(`details ${tab}`, "[data-testid='details-drawer']");
+    }
+    const silent = all.filter((c) => !c.tip).map((c) => `${c.surface}: ${c.tag} ${c.testid} "${c.text}"`);
+    expect(silent).toEqual([]);
+    // preset names and their one-line descriptions are content, not controls
+    const missing = [...new Set(labels)].filter((l) => !DYNAMIC.test(l) && !/ — /.test(l) && !named(l));
+    expect(missing).toEqual([]);
+  });
 });

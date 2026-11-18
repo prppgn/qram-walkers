@@ -8,7 +8,12 @@ export default defineConfig({
   testDir: "e2e-static",
   timeout: 300_000,
   retries: 0,
-  use: { baseURL: "http://127.0.0.1:4173", trace: "retain-on-failure" },
+  // these tests drive the full interface: open it in Advanced mode (see playwright.config.ts)
+  use: {
+    baseURL: "http://127.0.0.1:4173",
+    trace: "retain-on-failure",
+    storageState: { cookies: [], origins: [{ origin: "http://127.0.0.1:4173", localStorage: [{ name: "qram-mode", value: "advanced" }] }] },
+  },
   projects: [
     {
       name: "chromium",

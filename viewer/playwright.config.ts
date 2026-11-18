@@ -6,11 +6,18 @@ import { defineConfig, devices } from "@playwright/test";
 // profile); set PW_CHANNEL to override, or to "" for the bundled browser.
 const channel = process.env.PW_CHANNEL ?? (process.platform === "darwin" ? "chrome" : undefined);
 
+// The tests written for the full interface open it in Advanced mode, as a returning visitor
+// would; the specs about Simple mode and the first visit start from an empty profile.
+export const ADVANCED = {
+  cookies: [],
+  origins: [{ origin: "http://127.0.0.1:5173", localStorage: [{ name: "qram-mode", value: "advanced" }] }],
+};
+
 export default defineConfig({
   testDir: "e2e",
   timeout: 60_000,
   retries: 0,
-  use: { baseURL: "http://127.0.0.1:5173", trace: "retain-on-failure" },
+  use: { baseURL: "http://127.0.0.1:5173", trace: "retain-on-failure", storageState: ADVANCED },
   projects: [
     {
       name: "chromium",
