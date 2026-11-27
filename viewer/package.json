@@ -1,7 +1,7 @@
 {
   "name": "qram-walkers-viewer",
   "private": true,
-  "version": "0.2.0",
+  "version": "0.2.1",
   "type": "module",
   "description": "Web viewer of qramsim trajectories (quantum-walker qRAM, arXiv:2508.02855)",
   "license": "MIT",
