@@ -1,5 +1,7 @@
 # qram-walkers
 
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.24596859.svg)](https://doi.org/10.5281/zenodo.24596859)
+
 Interactive simulator and visualiser of the **quantum-walker quantum RAM**
 (De Riso, Catalano, Lloyd, Giovannetti, De Santis — arXiv:2508.02855).
 
@@ -100,6 +102,10 @@ If you use the program, please cite the paper:
 
 G. De Riso, G. Catalano, S. Lloyd, V. Giovannetti, D. De Santis,
 *A resource-efficient quantum-walker Quantum RAM*, arXiv:2508.02855 (2025).
+
+If the software produced your results, cite it too. Each release is archived on Zenodo: the DOI
+[10.5281/zenodo.24596859](https://doi.org/10.5281/zenodo.24596859) covers all versions and
+resolves to the latest one; the record of each version has its own DOI, to cite the version you used.
 
 [`CITATION.cff`](CITATION.cff) has the entries for the paper and for the software (GitHub shows
 them under "Cite this repository").
